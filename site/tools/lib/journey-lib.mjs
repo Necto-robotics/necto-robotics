@@ -2,7 +2,7 @@
  * Pure build-plan math shared by the build scripts and Vitest.
  *
  * Source graphs are verbatim copies (assets-src/models/) of
- * G:\Robotics\LEGOSwarm\loom-datasets\models\{car,pyramid}.{graph,assembly}.json
+ * D:\Robotics\LEGOSwarm\loom-datasets\models\{car,pyramid}.{graph,assembly}.json
  * produced by the loom-data-builder CAD→graph pipeline. Poses are ROS-frame
  * meters (z-up); we bake the three.js mapping (y-up) at build time:
  * three = (x, z, -y), yawY = -yaw.

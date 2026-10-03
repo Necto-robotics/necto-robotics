@@ -22,7 +22,7 @@ import sys
 
 from PIL import Image
 
-DATASETS = pathlib.Path(r"G:/Robotics/LEGOSwarm/loom-datasets")
+DATASETS = pathlib.Path(r"D:/Robotics/LEGOSwarm/loom-datasets")
 CAPTURE = "3c7d4e33"
 FRAME = "frame_0004"
 OUT_W, OUT_H = 1280, 720
