@@ -1,0 +1,278 @@
+/*
+	Loom Robotics — Architecture Explorer styles
+	Loaded only on architecture.html (+ the homepage mini-graph bits, which are
+	scoped under .arch-mini and safe to ship anywhere). Reuses brand tokens from
+	brand.css; keeps the aerospace/engineering-dashboard tone — no neon.
+*/
+
+/* ===== Explorer shell ===== */
+.arch-stage {
+	position: relative;
+	display: grid;
+	grid-template-columns: 1fr;
+	border: 1px solid var(--graphite-line);
+	border-radius: 6px;
+	overflow: hidden;
+	background-color: var(--graphite);
+	background-image:
+		linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+	background-size: 22px 22px;
+}
+
+#arch-explorer {
+	width: 100%;
+	height: 70vh;
+	min-height: 460px;
+	touch-action: none;
+}
+
+/* Hover tooltip */
+.arch-tip {
+	position: absolute;
+	transform: translate(-50%, -100%);
+	pointer-events: none;
+	background: var(--charcoal);
+	color: var(--offwhite);
+	border: 1px solid var(--graphite-line);
+	border-left: 2px solid var(--orange);
+	font-family: "Inter", sans-serif;
+	font-size: 0.8rem;
+	line-height: 1.4;
+	padding: 0.4rem 0.6rem;
+	border-radius: 4px;
+	max-width: 260px;
+	opacity: 0;
+	transition: opacity 120ms ease;
+	z-index: 5;
+}
+.arch-tip.is-on { opacity: 1; }
+
+/* ===== Controls cluster ===== */
+#arch-controls {
+	position: absolute;
+	top: 0.75rem;
+	left: 0.75rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	z-index: 6;
+}
+#arch-controls button {
+	width: 2.2rem;
+	height: 2.2rem;
+	line-height: 1;
+	padding: 0;
+	border: 1px solid var(--graphite-line);
+	background: rgba(21,25,30,0.85);
+	color: var(--offwhite);
+	border-radius: 4px;
+	font-family: "Space Grotesk", sans-serif;
+	font-size: 1rem;
+	cursor: pointer;
+	transition: border-color 140ms ease, color 140ms ease;
+}
+#arch-controls button:hover { border-color: var(--orange); color: var(--orange); }
+#arch-controls .reset { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; }
+#arch-controls .expand { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; }
+#arch-controls .expand[aria-pressed="true"] { border-color: var(--orange); color: var(--orange); }
+
+/* ===== Full screen =====
+   Inside the white paper's text column the graph is cramped and the 340px
+   detail panel covers half of it, so the stage can take over the viewport. */
+.arch-stage.is-fullscreen {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	border: 0;
+	border-radius: 0;
+}
+.arch-stage.is-fullscreen #arch-explorer { height: 100%; min-height: 0; }
+html.arch-locked,
+body.arch-locked { overflow: hidden; }
+
+/* ===== Embedded in the white paper =====
+   The paper is a light reading page; the stage is dark, so frame it as a
+   deliberate figure rather than letting it read as a broken block. */
+.arch-figure {
+	margin: 1.75rem 0 0 0;
+}
+.arch-figure .arch-stage { border-radius: 4px; }
+.arch-figure figcaption {
+	margin-top: 0.75rem;
+	font-family: "Inter", sans-serif;
+	font-size: 0.78rem;
+	line-height: 1.6;
+	color: #6b7580;
+}
+.arch-figure.is-open .arch-stage { border-radius: 0; }
+
+/* In the paper's text column the stage is only ~620px wide and the legend at
+   full size covers nearly half of it. Compact it there; full size returns in
+   full screen, where there is room. */
+.arch-figure .arch-stage:not(.is-fullscreen) #arch-legend { padding: 0.45rem 0.55rem; }
+.arch-figure .arch-stage:not(.is-fullscreen) #arch-legend button {
+	gap: 0.4rem;
+	padding: 0.12rem 0.2rem;
+	font-size: 0.64rem;
+}
+.arch-figure .arch-stage:not(.is-fullscreen) #arch-legend .sw { width: 0.55rem; height: 0.55rem; }
+.arch-boot-error {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	margin: 0;
+	color: rgba(255,255,255,0.6);
+	font-size: 0.85rem;
+}
+
+/* ===== Legend ===== */
+#arch-legend {
+	position: absolute;
+	bottom: 0.75rem;
+	left: 0.75rem;
+	margin: 0;
+	padding: 0.6rem 0.75rem;
+	list-style: none;
+	background: rgba(21,25,30,0.85);
+	border: 1px solid var(--graphite-line);
+	border-radius: 4px;
+	z-index: 6;
+}
+#arch-legend li { padding: 0; margin: 0; border: 0; }
+#arch-legend button {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	width: 100%;
+	padding: 0.2rem 0.25rem;
+	background: none;
+	border: 0;
+	color: rgba(255,255,255,0.75);
+	font-family: "Inter", sans-serif;
+	font-size: 0.72rem;
+	text-align: left;
+	cursor: pointer;
+}
+#arch-legend button:hover,
+#arch-legend button.is-active { color: var(--offwhite); }
+#arch-legend .sw {
+	display: inline-block;
+	width: 0.7rem; height: 0.7rem;
+	border-radius: 2px;
+	flex: 0 0 auto;
+}
+#arch-legend button.is-active .sw { box-shadow: 0 0 0 2px rgba(255,106,19,0.5); }
+
+/* ===== Side panel ===== */
+#arch-panel {
+	position: absolute;
+	top: 0; right: 0;
+	width: 340px;
+	max-width: 90%;
+	height: 100%;
+	background: var(--charcoal);
+	border-left: 1px solid var(--graphite-line);
+	transform: translateX(102%);
+	transition: transform 220ms ease;
+	z-index: 8;
+	display: flex;
+	flex-direction: column;
+}
+#arch-panel.is-open { transform: translateX(0); }
+.arch-panel-head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 1.1rem 1.1rem 0.5rem;
+	border-bottom: 1px solid var(--graphite-line);
+}
+#arch-panel-title {
+	margin: 0;
+	font-family: "Space Grotesk", sans-serif;
+	font-size: 1.1rem;
+	color: var(--offwhite);
+}
+#arch-panel .close {
+	background: none; border: 0; color: rgba(255,255,255,0.6);
+	font-size: 1.4rem; line-height: 1; cursor: pointer; padding: 0;
+}
+#arch-panel .close:hover { color: var(--orange); }
+#arch-panel-body { padding: 1rem 1.1rem; overflow-y: auto; }
+#arch-panel-body p { color: rgba(255,255,255,0.75); font-size: 0.9rem; line-height: 1.6; }
+#arch-panel-body ul { margin: 0 0 1rem; padding-left: 1.1rem; }
+#arch-panel-body li { color: rgba(255,255,255,0.7); font-size: 0.85rem; }
+.arch-panel-layer {
+	display: inline-block;
+	font-family: "Space Grotesk", sans-serif;
+	font-size: 0.65rem;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	margin-bottom: 0.6rem;
+}
+#arch-panel-body .media-tile { display: block; margin-top: 0.5rem; }
+
+/* ===== Mobile: panel becomes a bottom sheet ===== */
+@media (max-width: 736px) {
+	#arch-explorer { height: 60vh; min-height: 360px; }
+	#arch-panel {
+		top: auto; bottom: 0; right: 0;
+		width: 100%; max-width: 100%; height: 60%;
+		border-left: 0; border-top: 1px solid var(--graphite-line);
+		transform: translateY(102%);
+	}
+	#arch-panel.is-open { transform: translateY(0); }
+	#arch-legend { font-size: 0.66rem; }
+}
+
+/* ===== Homepage Level-1 mini-graph (hand-built SVG/CSS, no Cytoscape) ===== */
+.arch-mini {
+	position: relative;
+	border: 1px solid var(--graphite-line);
+	border-radius: 6px;
+	background-color: var(--graphite);
+	background-image:
+		linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+	background-size: 22px 22px;
+	padding: 1.5rem;
+}
+.arch-mini svg { display: block; width: 100%; height: auto; }
+.arch-mini .mini-node {
+	fill: var(--charcoal);
+	stroke: var(--steel);
+	stroke-width: 1.5;
+}
+.arch-mini .mini-node.is-physical { stroke: var(--orange); }
+.arch-mini .mini-label {
+	fill: var(--offwhite);
+	font-family: "Inter", sans-serif;
+	font-size: 11px;
+}
+.arch-mini .mini-edge {
+	stroke: var(--graphite-line);
+	stroke-width: 2;
+	fill: none;
+}
+/* travelling data pulse along the spine (Mission → Hardware) */
+.arch-mini .mini-pulse {
+	fill: var(--orange);
+	opacity: 0;
+	offset-path: path("M 90 80 L 570 80");
+	offset-rotate: 0deg;
+}
+.arch-mini .mini-pulse.p1 { animation: arch-flow 4.5s linear infinite; }
+.arch-mini .mini-pulse.p2 { animation: arch-flow 4.5s linear infinite; animation-delay: 1.5s; }
+.arch-mini .mini-pulse.p3 { animation: arch-flow 4.5s linear infinite; animation-delay: 3s; }
+@keyframes arch-flow {
+	0%   { offset-distance: 0%;   opacity: 0; }
+	10%  { opacity: 0.9; }
+	90%  { opacity: 0.9; }
+	100% { offset-distance: 100%; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.arch-mini .mini-pulse { animation: none; opacity: 0; }
+}

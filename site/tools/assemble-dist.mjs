@@ -1,13 +1,15 @@
 /**
- * Assembles the final GitHub Pages artifact in site/dist:
- *   - legacy pages + assets copied verbatim from the repo root (never bundled)
- *   - the Vite build (site/dist-vite) placed at /next/ (staging) or / (cutover)
+ * Assembles the final GitHub Pages artifact in site/dist from the Vite build
+ * (site/dist-vite: the journey, the white paper and the dev log) plus the
+ * few root-level statics the pages reference (favicon, social card, mark,
+ * CNAME).
  *
- * Cutover is controlled by JOURNEY_AT_ROOT=1, which also preserves the legacy
- * home as home-legacy.html for one release. Rollback = unset the flag.
+ * JOURNEY_AT_ROOT=1 (production) serves the site at / and keeps /next/ as a
+ * redirect for old links. Unset, the whole site is staged under /next/ and
+ * / redirects there.
  */
 import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join, sep } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const site = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -24,48 +26,37 @@ if (!existsSync(viteOut)) {
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 
-// Legacy statics, copied verbatim. assets/sass is .gitignored (absent in CI);
-// skip it locally so local dist matches the CI artifact.
-const skip = [`assets${sep}sass`];
-const copyFilter = (src) => !skip.some((s) => src.includes(s));
-
-for (const f of ["technical.html", "devlog.html", "CNAME"]) {
-  cpSync(join(repo, f), join(out, f));
+cpSync(join(repo, "CNAME"), join(out, "CNAME"));
+mkdirSync(join(out, "images"), { recursive: true });
+for (const f of ["favicon.svg", "og-cover.jpg", "loom-mark.svg"]) {
+  cpSync(join(repo, "images", f), join(out, "images", f));
 }
-cpSync(join(repo, "assets"), join(out, "assets"), { recursive: true, filter: copyFilter });
-cpSync(join(repo, "images"), join(out, "images"), { recursive: true });
 
-if (atRoot) {
-  cpSync(join(repo, "index.html"), join(out, "home-legacy.html"));
-  cpSync(viteOut, out, { recursive: true });
-  // /next/ was the staging channel through the whole build; anyone holding
-  // that link (or a bookmark) should land on the real thing, not a 404.
-  mkdirSync(join(out, "next"), { recursive: true });
-  writeFileSync(
-    join(out, "next", "index.html"),
-    `<!doctype html>
+const redirect = (to) => `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <title>Loom Robotics</title>
-    <link rel="canonical" href="https://loom-robotics.com/" />
+    <link rel="canonical" href="https://loom-robotics.com${to}" />
     <meta name="robots" content="noindex" />
-    <meta http-equiv="refresh" content="0; url=/" />
+    <meta http-equiv="refresh" content="0; url=${to}" />
   </head>
   <body>
-    <p>The preview channel is now the live site. <a href="/">Continue</a>.</p>
+    <p><a href="${to}">Continue to Loom Robotics</a>.</p>
   </body>
 </html>
-`
-  );
+`;
+
+if (atRoot) {
+  cpSync(viteOut, out, { recursive: true });
+  mkdirSync(join(out, "next"), { recursive: true });
+  writeFileSync(join(out, "next", "index.html"), redirect("/"));
 } else {
-  cpSync(join(repo, "index.html"), join(out, "index.html"));
   cpSync(viteOut, join(out, "next"), { recursive: true });
+  writeFileSync(join(out, "index.html"), redirect("/next/"));
 }
 
 // Pages must not run Jekyll over the artifact.
 writeFileSync(join(out, ".nojekyll"), "");
 
-console.log(
-  `assemble-dist: journey at ${atRoot ? "/ (CUTOVER, legacy home kept as /home-legacy.html)" : "/next/ (staging)"}`
-);
+console.log(`assemble-dist: site at ${atRoot ? "/" : "/next/ (staging)"}`);

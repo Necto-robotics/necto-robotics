@@ -119,8 +119,9 @@ function includePartials(): Plugin {
   };
 }
 
-export default defineConfig({
-  base: atRoot ? "/" : "/next/",
+export default defineConfig(({ command }) => ({
+  // Dev always serves at the root so root-absolute links behave as in production.
+  base: atRoot || command === "serve" ? "/" : "/next/",
   plugins: [includePartials(), serveLegacyAssets()],
   build: {
     outDir: "dist-vite",
@@ -135,4 +136,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

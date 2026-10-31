@@ -84,6 +84,9 @@ export class Build {
   private tmpS = new THREE.Vector3();
   private pose: ArmPose = { ...POSES.travel };
   readonly makespan: number;
+  /** Display scale of the model. The graph and build order are real; the
+   * model is shown larger than life so its progress reads from a distance. */
+  readonly brickScale = 2.2;
 
   constructor(opts: {
     model: JModel;
@@ -125,9 +128,10 @@ export class Build {
       mesh.receiveShadow = opts.shadows;
       mesh.frustumCulled = false;
       nodes.forEach((n, i) => {
-        const pos = new THREE.Vector3(n.pos[0], n.pos[1] + lift, n.pos[2]).add(this.origin);
+        const S = this.brickScale;
+        const pos = new THREE.Vector3(n.pos[0] * S, (n.pos[1] + lift) * S, n.pos[2] * S).add(this.origin);
         const quat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), n.yawY);
-        const target = new THREE.Matrix4().compose(pos, quat, new THREE.Vector3(1, 1, 1));
+        const target = new THREE.Matrix4().compose(pos, quat, new THREE.Vector3(S, S, S));
         const g = absGrey(n.color);
         mesh.setColorAt(i, col.setRGB(g, g, g));
         this.bricks.set(n.id, { node: n, mesh, index: i, target, pos, quat });
@@ -262,7 +266,7 @@ export class Build {
   private approach(node: JNode, w: number): { pos: THREE.Vector3; heading: number } {
     // A small offset along the sector so successive jobs look different.
     const a = this.sectorAngle(w) + ((node.order % 3) - 1) * 0.12;
-    const pos = new THREE.Vector3(Math.cos(a) * 0.4, this.origin.y, Math.sin(a) * 0.4).add(
+    const pos = new THREE.Vector3(Math.cos(a) * 0.44, this.origin.y, Math.sin(a) * 0.44).add(
       new THREE.Vector3(this.origin.x, 0, this.origin.z)
     );
     return { pos, heading: Math.atan2(pos.z - this.origin.z, this.origin.x - pos.x) };
@@ -384,11 +388,11 @@ export class Build {
         const grip = r.anchor("gripper");
         if (grip) {
           grip.getWorldPosition(this.tmpV);
-          this.tmpV.y -= 0.045;
+          this.tmpV.y -= 0.035;
           const k = smooth(seg(f, PHASE.placeStart + 0.03, PHASE.placeEnd));
           this.tmpV.lerp(ref.pos, k);
           this.tmpQ.copy(ref.quat);
-          this.tmpM.compose(this.tmpV, this.tmpQ, this.tmpS.set(1, 1, 1));
+          this.tmpM.compose(this.tmpV, this.tmpQ, this.tmpS.setScalar(this.brickScale));
           if (!off || f < PHASE.placeStart) {
             this.setBrick(ref, this.tmpM);
             carried.add(job.node.id);
@@ -422,6 +426,7 @@ export class Build {
           g.geometry = this.edges(job.node.part, ref);
           g.position.copy(ref.pos);
           g.quaternion.copy(ref.quat);
+          g.scale.setScalar(this.brickScale);
           g.visible = !(off && this.expiry && tau >= this.expiry.t);
         }
       }
@@ -432,7 +437,7 @@ export class Build {
         const k = seg(f, PHASE.placeEnd, 1);
         ring.visible = opts.lines > 0;
         ring.position.copy(ref.pos).setY(ref.pos.y + 0.002);
-        ring.scale.setScalar(1 + k * 1.6);
+        ring.scale.setScalar(this.brickScale * (1 + k * 1.6));
         (ring.material as THREE.MeshBasicMaterial).opacity = 0.65 * (1 - k);
       }
     }
@@ -448,6 +453,7 @@ export class Build {
         g.geometry = this.edges(ref.node.part, ref);
         g.position.copy(ref.pos);
         g.quaternion.copy(ref.quat);
+        g.scale.setScalar(this.brickScale);
         g.visible = true;
       }
     }

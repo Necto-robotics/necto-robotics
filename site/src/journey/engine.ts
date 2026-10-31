@@ -75,7 +75,7 @@ export async function mountJourney(report: TierReport): Promise<void> {
   scene.add(hero.root);
 
   // Studio rig: a key softbox, a rim and a glossy black floor under the hero.
-  const key = new THREE.SpotLight(0xffffff, 0, 6, Math.PI / 7, 0.85, 1.4);
+  const key = new THREE.SpotLight(0xffffff, 0, 6, Math.PI / 11, 0.9, 1.4);
   key.position.set(HERO.pos[0] + 1.1, 1.5, HERO.pos[2] + 1.3);
   key.target = hero.root;
   key.castShadow = shadows;
@@ -88,9 +88,27 @@ export async function mountJourney(report: TierReport): Promise<void> {
   const fill = new THREE.PointLight(0xffffff, 0, 3, 2);
   fill.position.set(HERO.pos[0] - 0.4, 0.5, HERO.pos[2] + 1.2);
   scene.add(key, rim, fill);
+  // A soft pool of floor that fades to black at its edge: no horizon line.
+  const pool = document.createElement("canvas");
+  pool.width = pool.height = 256;
+  const pg = pool.getContext("2d")!;
+  const grad = pg.createRadialGradient(128, 128, 0, 128, 128, 128);
+  grad.addColorStop(0, "#fff");
+  grad.addColorStop(0.45, "#888");
+  grad.addColorStop(1, "#000");
+  pg.fillStyle = grad;
+  pg.fillRect(0, 0, 256, 256);
   const studioFloor = new THREE.Mesh(
-    new THREE.CircleGeometry(1.6, 96),
-    new THREE.MeshStandardMaterial({ color: 0x030303, roughness: 0.55, metalness: 0.0, transparent: true, opacity: 0 })
+    new THREE.CircleGeometry(2.4, 96),
+    new THREE.MeshStandardMaterial({
+      color: 0x050505,
+      roughness: 0.68,
+      metalness: 0,
+      transparent: true,
+      opacity: 0,
+      alphaMap: new THREE.CanvasTexture(pool),
+      depthWrite: false,
+    })
   );
   studioFloor.rotation.x = -Math.PI / 2;
   studioFloor.position.set(HERO.pos[0], hall.plinthTop + 0.0008, HERO.pos[2]);
@@ -206,7 +224,7 @@ export async function mountJourney(report: TierReport): Promise<void> {
     const snap = build.update(tau, { lines: u < 1 ? 1 : T.lines(u) });
     build.rollWheels();
     build.group.visible = u < 4.95 || u > 5.9;
-    build.machines.visible = graphK < 0.05;
+    build.machines.visible = graphK < 0.05 && studio < 0.5;
 
     // Hero
     hero.root.visible = u < 3.06;

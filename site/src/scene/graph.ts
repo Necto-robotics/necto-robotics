@@ -16,7 +16,7 @@ export type Concept = "intent" | "graph" | "execution" | "log" | "verify";
 
 const CENTER = new THREE.Vector3(0, 1.08, 0);
 const LAYOUT_SCALE = 0.8;
-const NODE_SCALE = 2.4;
+const NODE_SCALE = 5;
 
 export class GraphRealm {
   readonly group = new THREE.Group();
@@ -155,8 +155,8 @@ export class GraphRealm {
     // Event log: an append-only column, newest at the bottom, scrolling up.
     this.logMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 });
     this.log = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 0.008), this.logMat, 34);
-    this.log.position.set(-1.05, CENTER.y - 0.55, -0.55);
-    this.log.rotation.y = 0.55;
+    this.log.position.set(-1.75, CENTER.y - 0.55, -0.9);
+    this.log.rotation.y = 0.35;
     this.log.frustumCulled = false;
     this.group.add(this.log);
 
@@ -183,7 +183,7 @@ export class GraphRealm {
       intent: anchor(new THREE.Vector3(0.1, 0.1, 0), this.intent),
       graph: anchor(new THREE.Vector3(0.62, CENTER.y + 0.28, 0.2)),
       execution: anchor(new THREE.Vector3(0, 0.1, 0), this.sats[1]!),
-      log: anchor(new THREE.Vector3(-1.05, CENTER.y + 0.35, -0.55)),
+      log: anchor(new THREE.Vector3(-1.75, CENTER.y + 0.62, -0.9)),
       verify: anchor(this.gpos.get(this.verifyNode)!.clone().add(new THREE.Vector3(0, 0.07, 0))),
     };
     const hit = (r: number, concept: Concept, parent: THREE.Object3D, p = new THREE.Vector3()) => {
@@ -195,7 +195,7 @@ export class GraphRealm {
     hit(0.14, "intent", this.intent);
     hit(0.62, "graph", this.group, CENTER.clone());
     for (const s of this.sats) hit(0.12, "execution", s);
-    hit(0.4, "log", this.group, new THREE.Vector3(-1.05, CENTER.y, -0.55));
+    hit(0.45, "log", this.group, new THREE.Vector3(-1.5, CENTER.y, -0.9));
     hit(0.1, "verify", this.group, this.gpos.get(this.verifyNode)!.clone());
 
     // Bricks lift into the layout through the build's override hook.
@@ -209,7 +209,7 @@ export class GraphRealm {
       this.tmpV.lerpVectors(ref.pos, g, e);
       // An arc: rise first, then settle sideways into the ring.
       this.tmpV.y += Math.sin(e * Math.PI) * 0.15;
-      const s = 1 + (NODE_SCALE - 1) * e;
+      const s = this.build.brickScale + (NODE_SCALE - this.build.brickScale) * e;
       out.compose(this.tmpV, ref.quat, this.tmpS.set(s, s, s));
       return true;
     };
@@ -245,7 +245,7 @@ export class GraphRealm {
     const F = this.focusK;
 
     this.light.intensity = 2.2 * k;
-    this.edgeMat.opacity = 0.32 * appear * F.graph;
+    this.edgeMat.opacity = 0.13 * appear * F.graph;
     this.core.scale.setScalar(0.4 + 0.6 * appear);
     this.core.visible = appear > 0.01;
     this.rings.forEach((r, i) => {
