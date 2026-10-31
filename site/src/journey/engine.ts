@@ -17,16 +17,18 @@ import { Hud } from "../ui/hud";
 import { PartTags } from "../ui/part-tags";
 import { ConceptTags } from "../ui/concept-tags";
 
-/** Story timeline: every visual parameter is a function of u. */
+/** Story timeline: every visual parameter is a function of u.
+ * Light/dark turns sit inside u in [i - 0.08, i + 0.08] (progress.TURN),
+ * the stretch of scroll at a chapter boundary with no copy in view. */
 const T = {
-  daylight: curve([[0, 1], [1.05, 1], [1.5, 0], [2.86, 0], [3.1, 1], [3.82, 1], [4.12, 0], [5.9, 0], [6.04, 1]]),
-  studio: curve([[1.02, 0], [1.5, 1], [2.86, 1], [3.06, 0]]),
-  explode: curve([[2.1, 0], [2.44, 1], [2.68, 1], [2.92, 0]]),
-  dusk: curve([[5.9, 0], [6.05, 0.5], [6.8, 0.85]]),
-  lines: curve([[2.9, 0], [3.12, 1], [3.86, 1], [3.98, 0]]),
-  graph: curve([[3.86, 0], [4.36, 1], [4.86, 1], [4.98, 0]]),
-  blackout: curve([[4.78, 0], [4.93, 1], [5.04, 0], [5.84, 0], [5.95, 1], [6.06, 0]]),
-  hud: (u: number) => (u > 3.08 && u < 3.9 ? 1 : 0),
+  daylight: curve([[0, 1], [0.92, 1], [1.08, 0], [2.92, 0], [3.08, 1], [3.92, 1], [4.08, 0], [5.985, 0], [6, 1]]),
+  studio: curve([[0.92, 0], [1.08, 1], [2.92, 1], [3.08, 0]]),
+  explode: curve([[2.1, 0], [2.44, 1], [2.68, 1], [2.9, 0]]),
+  dusk: curve([[6, 0], [6.1, 0.5], [6.8, 0.85]]),
+  lines: curve([[3, 0], [3.14, 1], [3.86, 1], [3.94, 0]]),
+  graph: curve([[3.9, 0], [4.36, 1], [4.86, 1], [4.95, 0]]),
+  blackout: curve([[4.84, 0], [4.95, 1], [5.05, 0], [5.92, 0], [5.97, 1], [6.01, 1], [6.08, 0]]),
+  hud: (u: number) => (u > 3.1 && u < 3.9 ? 1 : 0),
   drift: curve([[0, 1], [0.6, 0.4], [1.4, 0.6], [2.0, 0], [3.0, 0], [6.2, 0.6]]),
 };
 
@@ -117,6 +119,7 @@ export async function mountJourney(report: TierReport): Promise<void> {
 
   const graph = new GraphRealm({ build, plinthTop: hall.plinthTop, tier });
   scene.add(graph.group);
+  graph.view = camera;
 
   // Lunar concept: loaded lazily when the reader nears chapter 05.
   let lunar: import("../scene/lunar").LunarRealm | null = null;
@@ -212,7 +215,7 @@ export async function mountJourney(report: TierReport): Promise<void> {
     const blackout = T.blackout(u);
 
     // Scheme follows what the reader actually sees.
-    const scheme = day > 0.5 || (u > 5.9 && u < 7) ? "light" : "dark";
+    const scheme = day > 0.5 ? "light" : "dark";
     if (document.documentElement.dataset.scheme !== scheme) document.documentElement.dataset.scheme = scheme;
     setChapter(progress.chapters[Math.min(progress.chapters.length - 1, Math.floor(u))]?.id ?? "open");
 
@@ -221,10 +224,10 @@ export async function mountJourney(report: TierReport): Promise<void> {
     if (u < 1) {
       if (dt > 0 && !report.reducedMotion) ambientTau = Math.min(build.makespan * 0.42, ambientTau + dt * 0.22);
       tau = ambientTau;
-    } else if (u < 3.05) {
+    } else if (u < 3.08) {
       tau = ambientTau;
     } else {
-      const k = Math.min(1, Math.max(0, (u - 3.05) / (3.86 - 3.05)));
+      const k = Math.min(1, Math.max(0, (u - 3.08) / (3.86 - 3.08)));
       tau = ambientTau + (build.makespan - ambientTau) * k;
     }
 
@@ -234,11 +237,11 @@ export async function mountJourney(report: TierReport): Promise<void> {
 
     const snap = build.update(tau, { lines: u < 1 ? 1 : T.lines(u) });
     build.rollWheels();
-    build.group.visible = u < 4.95 || u > 5.9;
+    build.group.visible = u < 4.95 || u > 5.97;
     build.machines.visible = graphK < 0.05 && studio < 0.5;
 
     // Hero
-    hero.root.visible = u < 3.06;
+    hero.root.visible = studio > 0.02;
     hero.setExplode(explode);
     const display = POSES.display;
     hero.root.rotation.y = HERO.heading + studio * Math.sin(time * 0.12) * 0.06;
@@ -264,7 +267,7 @@ export async function mountJourney(report: TierReport): Promise<void> {
     // Lunar realm swaps the whole scene while it is on screen.
     if (u > 4.4) ensureLunar();
     let target: THREE.Scene = scene;
-    if (lunar && u > 4.93 && u < 5.95) {
+    if (lunar && u > 4.95 && u < 5.97) {
       lunar.update(u, time, dt, camera, director.cut);
       target = lunar.scene;
     }

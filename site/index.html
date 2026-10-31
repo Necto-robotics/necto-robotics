@@ -57,7 +57,7 @@
         <div class="stage__ui"></div>
       </div>
 
-      <nav class="chapter-index" aria-label="Chapters">
+      <nav class="chapter-index" aria-label="Chapters" data-away>
         <ol>
           <li><a href="#open"><span>00</span> Open</a></li>
           <li><a href="#worker"><span>01</span> The worker</a></li>
@@ -71,7 +71,6 @@
 
       <section class="chapter chapter--open" id="open" data-chapter="open" data-scheme="light" aria-labelledby="open-title">
         <div class="chapter__copy">
-          <p class="label">Loom Robotics</p>
           <h1 id="open-title">Robots that build&nbsp;together.</h1>
           <p class="lead">
             We develop decentralized robotic construction: fleets of robots that share one plan, choose their own work
@@ -92,7 +91,7 @@
         <figure class="still"><picture><source srcset="/media/stills/ch-open.avif" type="image/avif" /><img src="/media/stills/ch-open.jpg" alt="A wide daylit concrete hall; small white robots work on a stone plinth at its centre." loading="lazy" width="1920" height="1080" /></picture></figure>
       </section>
 
-      <section class="chapter" id="worker" data-chapter="worker" data-scheme="dark" aria-labelledby="worker-title">
+      <section class="chapter chapter--turn" id="worker" data-chapter="worker" data-scheme="dark" aria-labelledby="worker-title">
         <div class="chapter__copy">
           <p class="label"><span class="idx">01</span> The worker</p>
           <h2 id="worker-title">One robot, built to be one of many.</h2>
@@ -172,7 +171,7 @@
         <figure class="still"><picture><source srcset="/media/stills/ch-inside.avif" type="image/avif" /><img src="/media/stills/ch-inside.jpg" alt="The worker separated into its assemblies: wheels, chassis, battery, compute board, shell, status ring, camera, arm and gripper." loading="lazy" width="1920" height="1080" /></picture></figure>
       </section>
 
-      <section class="chapter chapter--long" id="together" data-chapter="together" data-scheme="light" aria-labelledby="together-title">
+      <section class="chapter chapter--long chapter--turn" id="together" data-chapter="together" data-scheme="light" aria-labelledby="together-title">
         <div class="chapter__copy">
           <p class="label"><span class="idx">03</span> Building together</p>
           <h2 id="together-title">Many robots. One build.</h2>
@@ -195,7 +194,7 @@
         <figure class="still"><picture><source srcset="/media/stills/ch-together.avif" type="image/avif" /><img src="/media/stills/ch-together.jpg" alt="Six robots around a half-built LEGO model; thin lines link each robot to the brick it has claimed." loading="lazy" width="1920" height="1080" /></picture></figure>
       </section>
 
-      <section class="chapter chapter--long" id="plan" data-chapter="plan" data-scheme="dark" aria-labelledby="plan-title">
+      <section class="chapter chapter--long chapter--turn" id="plan" data-chapter="plan" data-scheme="dark" aria-labelledby="plan-title">
         <div class="chapter__copy">
           <p class="label"><span class="idx">04</span> The shared plan</p>
           <h2 id="plan-title">No single robot holds the master plan.</h2>
@@ -227,7 +226,7 @@
           </ul>
           <a class="btn" href="/technical.html">Read the architecture <svg class="arrow" aria-hidden="true"><use href="#arrow" /></svg></a>
         </div>
-        <figure class="still"><picture><source srcset="/media/stills/ch-plan.avif" type="image/avif" /><img src="/media/stills/ch-plan.jpg" alt="The bricks lifted into a floating graph: rings of nodes by dependency wave around a central core, with robot replicas in orbit." loading="lazy" width="1920" height="1080" /></picture></figure>
+        <figure class="still"><picture><source srcset="/media/stills/ch-plan.avif" type="image/avif" /><img src="/media/stills/ch-plan.jpg" alt="The bricks lifted into a floating graph: rings of nodes by dependency wave around a central core; rings mark the jobs robots have claimed." loading="lazy" width="1920" height="1080" /></picture></figure>
       </section>
 
       <section class="chapter" id="beyond" data-chapter="beyond" data-scheme="dark" aria-labelledby="beyond-title">
@@ -244,37 +243,26 @@
         <figure class="still"><picture><source srcset="/media/stills/ch-beyond.avif" type="image/avif" /><img src="/media/stills/ch-beyond.jpg" alt="Concept: a fleet of robots assembling a low modular structure on a grey lunar plain under a black sky." loading="lazy" width="1920" height="1080" /></picture></figure>
       </section>
 
-      <section class="chapter chapter--close" id="status" data-chapter="status" data-scheme="light" aria-labelledby="status-title">
+      <section class="chapter chapter--close chapter--turn" id="status" data-chapter="status" data-scheme="light" aria-labelledby="status-title">
         <div class="chapter__copy">
           <p class="label"><span class="idx">06</span> Where it stands</p>
-          <h2 id="status-title">Proven in simulation. Now in hardware.</h2>
+          <h2 id="status-title">Proven in simulation. Built to go much further.</h2>
         </div>
         <div class="status">
           <article>
-            <h3><span class="status__mark" data-state="done"></span>Built in simulation</h3>
+            <h3><span class="status__mark" data-state="done"></span>Complete</h3>
             <ul>
-              <li>Replicated Assembly Graph over a peer-to-peer bus</li>
-              <li>Multi-robot builds, with teams for oversized jobs</li>
+              <li>One shared plan, no central controller</li>
               <li>Builds that survive losing robots mid-job</li>
-              <li>Digital twin with overhead reconciliation</li>
-              <li>Vision-guided grasping and verification</li>
-              <li>WEAVE operator app, replay-first</li>
-            </ul>
-          </article>
-          <article>
-            <h3><span class="status__mark" data-state="now"></span>In hardware bring-up</h3>
-            <ul>
-              <li>The worker's onboard computer and real-time firmware</li>
-              <li>Drive motors and the safe state</li>
-              <li>A trained part detector moving onto the robot's NPU</li>
+              <li>Vision-guided assembly, checked placement by placement</li>
             </ul>
           </article>
           <article>
             <h3><span class="status__mark" data-state="next"></span>Ahead</h3>
             <ul>
-              <li>Choosing the arm</li>
-              <li>A single robot assembling on hardware</li>
-              <li>Several robots building together</li>
+              <li>Fleets of real robots building together</li>
+              <li>Construction where people cannot easily go</li>
+              <li>Orbital assembly and planetary construction</li>
             </ul>
           </article>
         </div>

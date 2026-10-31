@@ -29,11 +29,11 @@ export const CAMERA_KEYS: CamKey[] = [
   { u: 4.5, pos: [1.7, 1.4, 4.0], look: [0, 1.2, 0], fov: 36 },
   { u: 4.85, pos: [2.8, 2.1, 2.6], look: [0, 1.15, 0], fov: 36 },
   // 05 Beyond the arena (lunar realm coordinates).
-  { u: 5.05, pos: [-26, 7.5, 34], look: [0, 1.5, 0], fov: 30 },
+  { u: 4.96, pos: [-26, 7.5, 34], look: [0, 1.5, 0], fov: 30 },
   { u: 5.5, pos: [-17, 4.2, 22], look: [0, 1.2, 0], fov: 30 },
-  { u: 5.9, pos: [-9, 2.6, 14], look: [0, 1.0, 0], fov: 30 },
+  { u: 5.94, pos: [-9, 2.6, 14], look: [0, 1.0, 0], fov: 30 },
   // 06 Close: the hall at dusk, the finished model.
-  { u: 6.05, pos: [1.25, 0.5, 1.75], look: [0, 0.2, 0], fov: 30 },
+  { u: 5.98, pos: [1.25, 0.5, 1.75], look: [0, 0.2, 0], fov: 30 },
   { u: 6.6, pos: [2.3, 0.85, 3.1], look: [0, 0.24, 0], fov: 32 },
   { u: 7.0, pos: [3.1, 1.15, 4.2], look: [0, 0.3, 0], fov: 32 },
 ];

@@ -6,9 +6,9 @@ import type { Concept, GraphRealm } from "../scene/graph";
  * 3D highlights its list entry. */
 const NAMES: Record<Concept, string> = {
   intent: "Human intent",
-  graph: "Assembly Graph · current revision",
-  execution: "Robot replica",
-  log: "Event log",
+  graph: "Assembly Graph",
+  execution: "Claimed job",
+  log: "Event log · current revision",
   verify: "Local verification",
 };
 
@@ -67,12 +67,12 @@ export class ConceptTags {
   update(visible: boolean): void {
     if (visible !== this.on) {
       this.on = visible;
-      for (const t of this.tags.values()) t.toggleAttribute("data-on", visible);
       if (!visible) {
         this.sceneHover = null;
         this.sync();
       }
     }
+    for (const [c, t] of this.tags) t.toggleAttribute("data-on", visible && this.graph.labelled[c]);
     if (!visible) return;
     const stage = document.querySelector<HTMLElement>(".stage")!;
     const w = stage.clientWidth;

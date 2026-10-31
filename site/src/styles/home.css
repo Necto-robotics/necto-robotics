@@ -37,20 +37,41 @@
     transition-duration: 0.45s !important;
   }
 }
-/* Copy-side scrim: keeps text legible over any frame without boxes. */
+/* Reading mask: the scene behind the copy column is blurred and washed
+   out, then fades back in toward the middle. Sized from the copy's own
+   measure, so the text never sits on busy detail. */
+.stage {
+  --mask: linear-gradient(
+    90deg,
+    #000 0,
+    #000 calc(var(--gutter) + var(--measure) - 4rem),
+    transparent calc(var(--gutter) + var(--measure) + 14rem)
+  );
+}
+.stage::before,
 .stage::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 1;
   pointer-events: none;
+}
+.stage::before {
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  -webkit-mask-image: var(--mask);
+  mask-image: var(--mask);
+}
+.stage::after {
   background: linear-gradient(
     90deg,
-    rgba(var(--scrim), 0.88) 0%,
-    rgba(var(--scrim), 0.62) 26%,
-    rgba(var(--scrim), 0) 52%
+    rgba(var(--scrim), 0.9) 0,
+    rgba(var(--scrim), 0.84) calc(var(--gutter) + var(--measure) - 4rem),
+    rgba(var(--scrim), 0) calc(var(--gutter) + var(--measure) + 14rem)
   );
-  opacity: var(--scrim-k, 1);
-  transition: opacity 0.6s var(--ease);
+}
+html[data-tier="low"] .stage::before {
+  display: none;
 }
 .stage__ui {
   position: absolute;
@@ -79,6 +100,12 @@
   min-height: 0;
   padding-bottom: 10vh;
 }
+/* A chapter that turns the scene from light to dark (or back) starts with a
+   screen of empty scroll, so the turn happens with no text in view. */
+.chapter--turn {
+  padding-top: 115vh;
+  padding-top: 115svh;
+}
 .chapter__copy {
   max-width: var(--measure);
   pointer-events: auto;
@@ -98,7 +125,15 @@
   letter-spacing: -0.03em;
   margin: 0.4em 0 0.55em;
 }
-.chapter p {
+/* Three kinds of text in the journey: display (h1, h2), title (.lead and
+   section heads) and body. Body is one size in one of two inks: --fg for
+   names and emphasis, --fg-2 for prose. Mono is kept for the in-scene
+   telemetry only. */
+.chapter {
+  color: var(--fg);
+}
+.chapter p,
+.chapter li {
   color: var(--fg-2);
 }
 .chapter .lead {
@@ -110,18 +145,37 @@
 .chapter .sub {
   max-width: 28rem;
 }
-.label .idx {
+.chapter .label {
+  font: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg-2);
+  margin: 0;
+}
+.chapter .label .idx {
   color: var(--fg);
-  margin-right: 0.9em;
+  margin-right: 0.6em;
 }
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin: 2rem 0 2.5rem;
+  margin: 2rem 0 2rem;
 }
+.chapter .btn {
+  font-size: var(--step-0);
+}
+/* Honesty marks: plain body text behind a small shape. */
 .chapter .chip {
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
+  padding: 0;
+  border: 0;
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg-2);
 }
 
 /* Statics: shown without JS, without WebGL, or when the engine fails. */
@@ -189,6 +243,12 @@ html:not(.js) .chapter[data-scheme="dark"] {
   font-size: 0.66rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  transition: opacity 0.5s var(--ease), visibility 0s;
+}
+.chapter-index[data-away] {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s var(--ease), visibility 0s 0.5s;
 }
 .chapter-index ol {
   list-style: none;
@@ -266,7 +326,7 @@ html:not(.js) .chapter-index {
   background: none;
   color: var(--fg);
   font: inherit;
-  font-size: 0.98rem;
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
 }
@@ -278,27 +338,22 @@ html:not(.js) .chapter-index {
   text-underline-offset: 0.3em;
 }
 .parts__tag {
-  font-family: var(--font-mono);
-  font-size: 0.64rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
+  font-weight: 400;
+  color: var(--fg-2);
+  white-space: nowrap;
 }
 .parts li p,
 .concepts li p {
   margin: -0.2rem 0 0.8rem;
-  font-size: 0.9rem;
   line-height: 1.5;
-  color: var(--muted);
 }
 .concepts button {
   justify-content: flex-start;
 }
 .concepts .idx {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--muted);
-  width: 1.4rem;
+  font-weight: 400;
+  color: var(--fg-2);
+  width: 1.6rem;
 }
 
 .feed {
@@ -337,8 +392,10 @@ html:not(.js) .chapter-index {
   gap: 0.6rem;
   align-items: center;
   margin-top: 0.75rem;
-  font-size: 0.82rem;
-  color: var(--muted);
+  color: var(--fg-2);
+}
+.feed figcaption .chip {
+  margin: 0;
 }
 
 .steps {
@@ -353,18 +410,13 @@ html:not(.js) .chapter-index {
   position: relative;
   padding: 0.75rem 0 0.75rem 2.2rem;
   border-bottom: 1px solid var(--rule);
-  font-size: 0.95rem;
-  color: var(--fg-2);
 }
 .steps li::before {
   content: "0" counter(step);
   position: absolute;
   left: 0;
   top: 0.75rem;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  padding-top: 0.25rem;
-  color: var(--muted);
+  color: var(--fg-2);
 }
 .steps strong {
   color: var(--fg);
@@ -375,21 +427,19 @@ html:not(.js) .chapter-index {
 .status {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(1.5rem, 3vw, 3rem);
-  max-width: 82rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+  max-width: var(--measure);
   margin: 3rem 0 4rem;
   pointer-events: auto;
 }
 .status h3 {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  gap: 0.7rem;
+  font-size: var(--step-1);
+  letter-spacing: -0.015em;
+  margin-bottom: 0;
   padding-bottom: 0.9rem;
   border-bottom: 1px solid var(--rule-strong);
 }
@@ -399,10 +449,8 @@ html:not(.js) .chapter-index {
   padding: 0;
 }
 .status li {
-  padding: 0.6rem 0;
+  padding: 0.7rem 0;
   border-bottom: 1px solid var(--rule);
-  font-size: 0.95rem;
-  color: var(--fg-2);
 }
 .status__mark {
   width: 0.6rem;
@@ -412,9 +460,6 @@ html:not(.js) .chapter-index {
 }
 .status__mark[data-state="done"] {
   background: currentColor;
-}
-.status__mark[data-state="now"] {
-  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
 }
 .cards {
   position: relative;
@@ -446,9 +491,14 @@ html:not(.js) .chapter-index {
   line-height: 1.2;
   letter-spacing: -0.015em;
 }
+.card .label {
+  font: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg-2);
+}
 .card > span:not(.label) {
-  color: var(--muted);
-  font-size: 0.9rem;
+  color: var(--fg-2);
 }
 .card .arrow {
   position: absolute;
@@ -468,7 +518,7 @@ html:not(.js) .chapter-index {
 }
 .card--primary .label,
 .card--primary > span:not(.label) {
-  color: color-mix(in srgb, var(--bg) 70%, transparent);
+  color: color-mix(in srgb, var(--bg) 82%, transparent);
 }
 
 /* Stage overlays: labels, leader lines, HUD */
@@ -646,6 +696,9 @@ html:not(.js) .chapter-index {
     margin-bottom: 0;
     z-index: 2;
   }
+  .stage::before {
+    display: none;
+  }
   .stage::after {
     background: linear-gradient(rgba(var(--scrim), 0.6), rgba(var(--scrim), 0) 30%);
   }
@@ -656,6 +709,9 @@ html:not(.js) .chapter-index {
   }
   .chapter--long {
     padding-bottom: 50svh;
+  }
+  .chapter--turn {
+    padding-top: 2.5rem;
   }
   .chapter--open {
     padding-top: 2rem;

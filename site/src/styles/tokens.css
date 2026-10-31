@@ -30,13 +30,18 @@
   --measure: 34rem;
   --radius: 2px;
   --ease: cubic-bezier(0.2, 0.7, 0.1, 1);
-  --nav-h: 3.75rem;
 
-  /* Light scheme (default) */
+  --nav-h: 3.75rem;
+}
+
+/* Light scheme (default). Also set on a section, so its copy keeps one
+   colour whatever the page scheme does around it. */
+:root,
+[data-scheme="light"] {
   --bg: var(--paper);
   --fg: var(--ink);
-  --fg-2: var(--graphite);
-  --muted: #62666b;
+  --fg-2: #25282b;
+  --muted: #55595e;
   --rule: rgba(10, 11, 12, 0.14);
   --rule-strong: rgba(10, 11, 12, 0.32);
   --surface: rgba(255, 255, 255, 0.72);
@@ -46,8 +51,8 @@
 
 [data-scheme="dark"] {
   --bg: #060607;
-  --fg: #eceef0;
-  --fg-2: #c3c7cb;
+  --fg: #f2f3f4;
+  --fg-2: #dcdfe2;
   --muted: #8f949a;
   --rule: rgba(236, 238, 240, 0.14);
   --rule-strong: rgba(236, 238, 240, 0.34);
