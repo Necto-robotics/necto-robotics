@@ -26,6 +26,10 @@ const NAMES: Record<string, string> = {
   chassis: "Chassis",
 };
 
+/** Which side of its anchor each label sits on, so the dense middle of the
+ * stack (camera, compute, power) splits left and right. */
+const LEFT = new Set(["compute", "power", "chassis"]);
+
 export class PartTags {
   private tags = new Map<string, HTMLElement>();
   private buttons = new Map<string, HTMLButtonElement>();
@@ -103,12 +107,15 @@ export class PartTags {
     const h = stage.clientHeight;
     for (const [part, t] of this.tags) {
       const a = this.hero.anchor(ANCHORS[part]!);
-      if (!a) continue;
+      if (!a) {
+        t.removeAttribute("data-on");
+        continue;
+      }
       a.getWorldPosition(this.v);
       this.v.project(this.camera);
       const x = (this.v.x * 0.5 + 0.5) * w;
       const y = (-this.v.y * 0.5 + 0.5) * h;
-      const left = x < w * 0.6;
+      const left = LEFT.has(part);
       t.dataset.side = left ? "left" : "right";
       t.style.transform = left
         ? `translate(${x - 10}px, ${y}px) translate(-100%, -50%)`

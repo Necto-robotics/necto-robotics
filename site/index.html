@@ -40,7 +40,7 @@
     <script>
       document.documentElement.classList.add("js");
     </script>
-    <link rel="preload" as="image" href="/media/stills/ch-open.avif" type="image/avif" fetchpriority="high" />
+    <link rel="preload" as="image" href="/media/stills/poster.avif" type="image/avif" fetchpriority="high" />
   </head>
   <body class="page-home">
     <!--#include header -->
@@ -50,8 +50,8 @@
            same frame the engine draws first, so the canvas fades in over it. -->
       <div class="stage" aria-hidden="true">
         <picture class="stage__poster">
-          <source srcset="/media/stills/ch-open.avif" type="image/avif" />
-          <img src="/media/stills/ch-open.jpg" alt="" width="1920" height="1080" />
+          <source srcset="/media/stills/poster.avif" type="image/avif" />
+          <img src="/media/stills/poster.jpg" alt="" width="1920" height="1080" />
         </picture>
         <canvas class="stage__canvas"></canvas>
         <div class="stage__ui"></div>

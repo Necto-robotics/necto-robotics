@@ -172,6 +172,7 @@ export async function mountJourney(report: TierReport): Promise<void> {
   let last = performance.now();
   let time = 0;
   let fixedTime: number | null = null;
+  let lastChapter = -1;
 
   const footer = document.querySelector(".site-footer");
   if (footer) {
@@ -187,8 +188,18 @@ export async function mountJourney(report: TierReport): Promise<void> {
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
     if (paused || document.hidden) return;
-    time = fixedTime ?? time + dt;
+    // Reduced motion: no ambient animation at all, only what the reader scrolls.
+    time = fixedTime ?? (report.reducedMotion ? 0 : time + dt);
     const u = uOverride ?? progress.update();
+    if (report.reducedMotion && uOverride === null) {
+      // Camera cuts between chapters get a short fade instead of a flight.
+      const ch = Math.floor(u);
+      if (ch !== lastChapter) {
+        lastChapter = ch;
+        stageEl.removeAttribute("data-live");
+        requestAnimationFrame(() => stageEl.setAttribute("data-live", ""));
+      }
+    }
     renderFrame(u, report.reducedMotion ? 0 : dt);
     governor.sample(dt);
   };
@@ -320,14 +331,25 @@ export async function mountJourney(report: TierReport): Promise<void> {
         ];
         ensureLunar();
         while (!lunar) await new Promise((r) => setTimeout(r, 100));
-        for (const [name, u] of keys) {
+        const shoot = async (name: string, u: number) => {
           uOverride = u;
           fixedTime = 0;
           time = 0;
-          director.cut = true;
+          // dt = 0 snaps the camera to exactly u (no spring, no chapter cut).
+          director.cut = false;
           renderFrame(u, 0);
-          await captureCanvas(name, canvas, { dir: "public/media/stills", quality: 0.88 });
-        }
+          renderFrame(u, 0);
+          await captureCanvas(name, canvas, { dir: "public/media/stills", quality: 0.92 });
+        };
+        // The poster is the live first frame, composition and all.
+        await shoot("poster", 0);
+        // Chapter stills sit beside their copy, so they are centred.
+        const shift = stage.lensShift;
+        stage.lensShift = 0;
+        stage.resize();
+        for (const [name, u] of keys) await shoot(name, u);
+        stage.lensShift = shift;
+        stage.resize();
         director.cut = report.reducedMotion;
         uOverride = null;
         fixedTime = null;

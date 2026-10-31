@@ -31,6 +31,12 @@
 .stage[data-live] .stage__canvas {
   opacity: 1;
 }
+@media (prefers-reduced-motion: reduce) {
+  /* The one transition kept: a soft fade where the camera cuts. */
+  .stage__canvas {
+    transition-duration: 0.45s !important;
+  }
+}
 /* Copy-side scrim: keeps text legible over any frame without boxes. */
 .stage::after {
   content: "";
@@ -304,6 +310,27 @@ html:not(.js) .chapter-index {
   border-radius: var(--radius);
   filter: grayscale(1) contrast(1.05);
 }
+.feed__frame {
+  position: relative;
+}
+.feed__box {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+.feed__box::after {
+  content: attr(data-label);
+  position: absolute;
+  left: -1px;
+  bottom: 100%;
+  padding: 1px 4px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0a0b0c;
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
 .feed figcaption {
   display: flex;
   flex-wrap: wrap;
@@ -323,15 +350,17 @@ html:not(.js) .chapter-index {
 }
 .steps li {
   counter-increment: step;
-  display: grid;
-  grid-template-columns: 2.2rem 1fr;
-  padding: 0.75rem 0;
+  position: relative;
+  padding: 0.75rem 0 0.75rem 2.2rem;
   border-bottom: 1px solid var(--rule);
   font-size: 0.95rem;
   color: var(--fg-2);
 }
 .steps li::before {
   content: "0" counter(step);
+  position: absolute;
+  left: 0;
+  top: 0.75rem;
   font-family: var(--font-mono);
   font-size: 0.7rem;
   padding-top: 0.25rem;
@@ -516,6 +545,7 @@ html:not(.js) .chapter-index {
 .hud__head {
   display: flex;
   justify-content: space-between;
+  gap: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--muted);
@@ -646,8 +676,14 @@ html:not(.js) .chapter-index {
     font-size: 0.6rem;
   }
   .hud__log,
-  .hud__waves {
+  .hud__waves,
+  .hud__head,
+  .hud dt:nth-of-type(n + 3),
+  .hud dd:nth-of-type(n + 3) {
     display: none;
+  }
+  .hud__bar {
+    margin: 0.5rem 0 0;
   }
   html:not(.js) .chapter,
   html.static .chapter {

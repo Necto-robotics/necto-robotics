@@ -276,7 +276,8 @@ export class GraphRealm {
     this.satOrbit.updateMatrixWorld(true);
     [0, 2, 4].forEach((si, i) => {
       this.sats[si]!.getWorldPosition(this.tmpV);
-      const target = this.gpos.get(claimIds[(i * 3 + Math.floor(t / 4)) % claimIds.length]!)!;
+      const target = this.gpos.get(claimIds[(i * 3 + Math.floor(t / 4)) % claimIds.length] ?? "");
+      if (!target) return;
       lp.setXYZ(i * 2, this.tmpV.x, this.tmpV.y, this.tmpV.z);
       lp.setXYZ(i * 2 + 1, target.x, target.y, target.z);
     });

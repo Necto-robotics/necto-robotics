@@ -56,7 +56,7 @@ for (const [name, jobs] of Object.entries(JOBS)) {
     const doc = await io.read(rawPath);
     await doc.transform(
       dedup(),
-      prune({ keepExtras: true }),
+      prune({ keepExtras: true, keepLeaves: true }),
       weld(),
       quantize({ quantizePosition: 14, quantizeNormal: 10 }),
       meshopt({ encoder: MeshoptEncoder, level: "medium" })

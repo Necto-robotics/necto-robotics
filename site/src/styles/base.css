@@ -279,6 +279,10 @@ p {
     font-size: 1.1rem;
     transform: translateY(-120%);
     visibility: hidden;
+  }
+  /* Animate only once the page has settled, so the closed menu never
+     flashes past on load. */
+  .site-nav[data-ready] .site-nav__links {
     transition: transform 0.35s var(--ease), visibility 0s 0.35s;
   }
   .site-nav__links a {

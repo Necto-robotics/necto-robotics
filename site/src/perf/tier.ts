@@ -33,9 +33,11 @@ function probeWebGL(): { ok: boolean; renderer: string | null } {
 
 export function detectTier(): TierReport {
   const reasons: string[] = [];
-  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const params = new URLSearchParams(location.search);
+  // `?motion=reduce` previews the reduced-motion path without OS settings.
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches || params.get("motion") === "reduce";
   const phone = matchMedia("(max-width: 47.99rem)").matches;
-  const override = new URLSearchParams(location.search).get("tier");
+  const override = params.get("tier");
   if (override === "none") {
     return { tier: "low", webgl: false, renderer: null, reasons: ["?tier=none"], reducedMotion, phone };
   }

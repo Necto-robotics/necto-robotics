@@ -25,8 +25,8 @@ export const CAMERA_KEYS: CamKey[] = [
   { u: 3.45, pos: [0.62, 0.98, 0.92], look: [0, 0.17, 0], fov: 30 },
   { u: 3.8, pos: [-0.7, 0.9, 0.85], look: [0, 0.17, 0], fov: 30 },
   // 04 The shared plan: rise with the bricks into the graph.
-  { u: 4.1, pos: [0.3, 1.0, 3.2], look: [0, 1.0, 0], fov: 36 },
-  { u: 4.5, pos: [1.3, 1.25, 2.9], look: [0, 1.08, 0], fov: 36 },
+  { u: 4.1, pos: [0.35, 1.1, 4.3], look: [0, 1.15, 0], fov: 36 },
+  { u: 4.5, pos: [1.7, 1.4, 4.0], look: [0, 1.2, 0], fov: 36 },
   { u: 4.85, pos: [2.8, 2.1, 2.6], look: [0, 1.15, 0], fov: 36 },
   // 05 Beyond the arena (lunar realm coordinates).
   { u: 5.05, pos: [-26, 7.5, 34], look: [0, 1.5, 0], fov: 30 },
