@@ -73,7 +73,7 @@ window.LOOM_GRAPH = {
 		  detail: "DRAFT — describe reactive obstacle avoidance among moving peers.", notes: ["DRAFT note"], image: { label: "Avoidance diagram" } },
 
 		// Layer 4 — Hardware
-		{ id: "jetson",            layer: "hardware", label: "Jetson Compute",       summary: "Onboard compute for perception and autonomy.",
+		{ id: "jetson",            layer: "hardware", label: "Onboard AI Compute",   summary: "Octa-core Linux processor with an NPU of up to 40 TOPS, beside a real-time microcontroller.",
 		  detail: "DRAFT — describe onboard compute platform and what runs on it.", notes: ["DRAFT note"], image: { label: "Compute board" } },
 		{ id: "cameras",           layer: "hardware", label: "Cameras",             summary: "Vision sensors for perception and inspection.",
 		  detail: "DRAFT — describe camera setup and roles (part detection, verification).", notes: ["DRAFT note"], image: { label: "Camera layout" } },

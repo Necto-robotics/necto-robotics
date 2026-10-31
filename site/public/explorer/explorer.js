@@ -209,12 +209,13 @@
 		var layer = layerById[n.layer];
 		var html = "";
 		html += '<span class="arch-panel-layer" style="color:' + accentOf(n.layer) + '">Layer ' + layer.index + " — " + esc(layer.name) + "</span>";
-		html += "<p>" + esc(n.detail) + "</p>";
-		if (n.notes && n.notes.length) {
-			html += "<ul>" + n.notes.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>";
-		}
-		if (n.image && n.image.label) {
-			html += '<span class="media-tile"><span class="media-placeholder">' + esc(n.image.label) + "</span></span>";
+		// Unwritten copy is marked DRAFT in graph.data.js; never show it. Fall
+		// back to the node's one-line summary, and skip placeholder media.
+		var written = function (x) { return x && !/^DRAFT/.test(x); };
+		html += "<p>" + esc(written(n.detail) ? n.detail : n.summary) + "</p>";
+		var notes = (n.notes || []).filter(written);
+		if (notes.length) {
+			html += "<ul>" + notes.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>";
 		}
 		panelTitle.textContent = n.label;
 		panelBody.innerHTML = html;
