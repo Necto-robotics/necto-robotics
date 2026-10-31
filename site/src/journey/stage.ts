@@ -1,106 +1,130 @@
 import * as THREE from "three";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import {
+  BlendFunction,
   BloomEffect,
   EffectComposer,
   EffectPass,
   NoiseEffect,
   RenderPass,
+  ToneMappingEffect,
+  ToneMappingMode,
   VignetteEffect,
 } from "postprocessing";
-import type { TierReport } from "../perf/tier";
+import type { Tier } from "../perf/tier";
 
-/** Renderer + camera + filmic post chain. LOW tier bypasses the composer
- * entirely (MSAA + CSS grain/vignette instead). */
-
+/** Renderer, camera and the post stack. The rest of the journey only sees
+ * `render()`, `resize()` and a few look parameters, so the renderer can be
+ * swapped (e.g. for WebGPU) without touching any scene code. */
 export interface Stage {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
-  render(deltaSeconds: number): void;
-  dispose(): void;
+  canvas: HTMLCanvasElement;
+  tier: Tier;
+  /** 0..1 how far the composition is shifted right to leave room for copy. */
+  lensShift: number;
+  setDpr(dpr: number): void;
+  maxDpr: number;
+  setLook(look: { bloom: number; vignette: number; exposure: number }): void;
+  resize(): void;
+  render(scene?: THREE.Scene): void;
 }
 
-const DPR_CAP: Record<TierReport["tier"], number> = { high: 2, mid: 1.5, low: 1 };
+const DPR_CAP: Record<Tier, number> = { high: 2, mid: 1.5, low: 1.25 };
 
-export function createStage(canvas: HTMLCanvasElement, tier: TierReport): Stage {
-  const usePost = tier.tier !== "low";
-
+export function createStage(canvas: HTMLCanvasElement, tier: Tier): Stage {
+  const usePost = tier !== "low";
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: !usePost,
+    alpha: false,
     powerPreference: "high-performance",
-    stencil: false,
-    depth: true,
-    // Dev-only: lets verification tooling read frames via toDataURL.
+    // Dev-only: the capture tool reads the canvas back after rendering.
     preserveDrawingBuffer: import.meta.env.DEV,
   });
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  const maxDpr = Math.min(devicePixelRatio, DPR_CAP[tier]);
+  renderer.setPixelRatio(maxDpr);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = usePost ? THREE.NoToneMapping : THREE.AgXToneMapping;
+  renderer.toneMappingExposure = 1;
+  renderer.shadowMap.enabled = tier !== "low";
+  renderer.shadowMap.type = THREE.PCFShadowMap;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x15191e);
-  scene.fog = new THREE.Fog(0x15191e, 3.0, 9.5);
-
-  const camera = new THREE.PerspectiveCamera(45, 1, 0.05, 50);
-  camera.position.set(2.4, 1.5, 2.8);
-
-  // Soft studio env for PBR response (no shadow maps anywhere — contact
-  // shadows are baked/faked per the perf plan).
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  const envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-  scene.environment = envTex;
-  scene.environmentIntensity = 0.45;
-  pmrem.dispose();
+  const camera = new THREE.PerspectiveCamera(32, 1, 0.03, 400);
 
   let composer: EffectComposer | null = null;
+  let renderPass: RenderPass | null = null;
+  let bloom: BloomEffect | null = null;
+  let vignette: VignetteEffect | null = null;
+  let tone: ToneMappingEffect | null = null;
   if (usePost) {
-    composer = new EffectComposer(renderer, { frameBufferType: THREE.HalfFloatType });
-    composer.addPass(new RenderPass(scene, camera));
-    const bloom = new BloomEffect({
-      intensity: 0.75,
-      luminanceThreshold: 0.72,
-      luminanceSmoothing: 0.18,
-      mipmapBlur: true,
+    composer = new EffectComposer(renderer, {
+      frameBufferType: THREE.HalfFloatType,
+      multisampling: tier === "high" ? 4 : 2,
     });
-    const vignette = new VignetteEffect({ offset: 0.26, darkness: 0.58 });
-    const noise = new NoiseEffect({ premultiply: true });
-    noise.blendMode.opacity.value = 0.22;
-    composer.addPass(new EffectPass(camera, bloom, vignette, noise));
+    renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+    bloom = new BloomEffect({
+      luminanceThreshold: 0.92,
+      luminanceSmoothing: 0.2,
+      intensity: 0.3,
+      mipmapBlur: true,
+      radius: 0.7,
+    });
+    vignette = new VignetteEffect({ offset: 0.32, darkness: 0.35 });
+    tone = new ToneMappingEffect({ mode: ToneMappingMode.AGX });
+    const noise = new NoiseEffect({ blendFunction: BlendFunction.OVERLAY, premultiply: true });
+    noise.blendMode.opacity.value = 0.05;
+    composer.addPass(new EffectPass(camera, bloom, tone, vignette, noise));
   }
 
-  function resize() {
-    const w = canvas.clientWidth || window.innerWidth;
-    const h = canvas.clientHeight || window.innerHeight;
-    if (!w || !h) return; // layout not ready yet — the observer will re-fire
-    const dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP[tier.tier]);
-    renderer.setPixelRatio(dpr);
-    renderer.setSize(w, h, false);
-    composer?.setSize(w, h);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-  }
-  resize();
-  window.addEventListener("resize", resize);
-  // Window 'resize' alone misses late layout (mount before first paint) and
-  // container-only changes (mobile dvh, embedded panes) — observe the element.
-  // The canvas itself, not its parent: on phones the canvas is a fraction of
-  // the stage, so its height can change while the stage's does not.
-  const observer = new ResizeObserver(() => resize());
-  observer.observe(canvas);
-
-  function render(deltaSeconds: number) {
-    if (composer) composer.render(deltaSeconds);
-    else renderer.render(scene, camera);
-  }
-
-  function dispose() {
-    observer.disconnect();
-    window.removeEventListener("resize", resize);
-    composer?.dispose();
-    envTex.dispose();
-    renderer.dispose();
-  }
-
-  return { renderer, scene, camera, render, dispose };
+  let exposure = 1;
+  const stage: Stage = {
+    renderer,
+    scene,
+    camera,
+    canvas,
+    tier,
+    lensShift: 0,
+    maxDpr,
+    setDpr(dpr) {
+      renderer.setPixelRatio(dpr);
+      stage.resize();
+    },
+    setLook({ bloom: b, vignette: v, exposure: e }) {
+      exposure = e;
+      if (bloom) bloom.intensity = b;
+      if (vignette) vignette.darkness = v;
+      renderer.toneMappingExposure = e;
+    },
+    resize() {
+      const w = canvas.clientWidth || innerWidth;
+      const h = canvas.clientHeight || innerHeight;
+      renderer.setSize(w, h, false);
+      composer?.setSize(w, h, false);
+      camera.aspect = w / h;
+      const s = stage.lensShift;
+      if (s > 0.001) {
+        // Widen the frustum to the right and show its left part, so the look
+        // target sits right of centre without re-authoring any camera keys.
+        camera.setViewOffset(w * (1 + s), h, 0, 0, w, h);
+      } else {
+        camera.clearViewOffset();
+      }
+      camera.updateProjectionMatrix();
+    },
+    render(target = scene) {
+      if (composer && renderPass) {
+        renderPass.mainScene = target;
+        // Exposure goes in front of the tone mapper on the post path.
+        if (tone) (tone as unknown as { exposure?: number }).exposure = exposure;
+        composer.render();
+      } else {
+        renderer.render(target, camera);
+      }
+    },
+  };
+  stage.resize();
+  return stage;
 }

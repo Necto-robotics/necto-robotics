@@ -70,12 +70,19 @@ export function rng(seed) {
 
 /**
  * Deterministic N-worker simulation over the real dependency graph honoring
- * WEAVE semantics: nodes become `job_available` when their support sources
- * complete; idle workers claim the lowest (lamport_ts, worker_id); ~3 events
- * per job, no polling. Returns a pace-compressed event tape plus a total
- * order of placements for the timelapse.
+ * WEAVE semantics: a node becomes available when its support sources
+ * complete. Availability is derived locally by every peer, so it never goes
+ * on the wire. Idle workers claim the lowest (lamport_ts, worker_id). The
+ * tape is the wire traffic: job_claimed + placement_complete, two events per
+ * job, no polling. Returns a pace-compressed tape plus a total order of
+ * placements for the timelapse.
+ *
+ * `fail: { worker, afterPlacements, ttl }` takes one worker offline once that
+ * many placements are complete. Its job is not finished; the silent lease
+ * expires locally on every peer after `ttl` (a `lease_expired` entry, never
+ * sent on the wire) and the job is claimed again by a survivor.
  */
-export function simulateTape(graph, { workers = 4, seed = 7 } = {}) {
+export function simulateTape(graph, { workers = 4, seed = 7, fail = null } = {}) {
   const { wave, deps } = computeWaves(graph);
   const rand = rng(seed);
   const remaining = new Map(); // id → unmet dep count
@@ -86,7 +93,6 @@ export function simulateTape(graph, { workers = 4, seed = 7 } = {}) {
   let t = 0;
   const available = [];
   const announce = (id) => {
-    tape.push({ t: +t.toFixed(2), type: "job_available", node: id, lamport: ++lamport });
     available.push(id);
   };
   for (const n of graph.nodes) if (remaining.get(n.id) === 0) announce(n.id);
@@ -95,7 +101,19 @@ export function simulateTape(graph, { workers = 4, seed = 7 } = {}) {
   const placeOrder = [];
   const idle = [...Array(workers).keys()];
 
+  const expiries = []; // { node, at, worker }
+  let failed = null;
+
   while (placeOrder.length < graph.nodes.length) {
+    if (fail && failed === null && placeOrder.length >= fail.afterPlacements) {
+      failed = fail.worker;
+      const held = busy.get(failed);
+      busy.delete(failed);
+      const at = idle.indexOf(failed);
+      if (at >= 0) idle.splice(at, 1);
+      tape.push({ t: +t.toFixed(2), type: "worker_offline", worker: failed, lamport: lamport, local: true });
+      if (held) expiries.push({ node: held.node, at: t + (fail.ttl ?? 3), worker: failed });
+    }
     // claims: idle workers pull lowest-wave-then-id (deterministic tiebreak)
     available.sort((a, b) => (wave.get(a) - wave.get(b)) || a.localeCompare(b));
     while (idle.length && available.length) {
@@ -104,9 +122,16 @@ export function simulateTape(graph, { workers = 4, seed = 7 } = {}) {
       tape.push({ t: +t.toFixed(2), type: "job_claimed", node, worker: w, lamport: ++lamport });
       busy.set(w, { node, done: t + 1.2 + rand() * 1.6 });
     }
-    // advance to next completion
-    const next = Math.min(...[...busy.values()].map((b) => b.done));
+    // advance to the next completion or lease expiry
+    const next = Math.min(...[...busy.values()].map((b) => b.done), ...expiries.map((e) => e.at));
     t = next;
+    for (const e of [...expiries]) {
+      if (e.at <= t + 1e-9) {
+        expiries.splice(expiries.indexOf(e), 1);
+        tape.push({ t: +t.toFixed(2), type: "lease_expired", node: e.node, worker: e.worker, lamport, local: true });
+        available.push(e.node);
+      }
+    }
     for (const [w, b] of [...busy.entries()]) {
       if (b.done <= t + 1e-9) {
         busy.delete(w);
@@ -153,4 +178,30 @@ export function buildModelData(graph, opts) {
   });
   const edges = graph.edges.map((e) => ({ s: e.sources, t: e.target, type: e.type }));
   return { nodes, edges, waveCount, freeCount, tape, makespan: +makespan.toFixed(2) };
+}
+
+/**
+ * Spatial layout for the Assembly Graph chapter: each dependency wave is a
+ * ring stacked along +Y, and a node keeps the bearing it has in the physical
+ * model so bricks lift into the graph without crossing over each other.
+ * Deterministic, in metres around the origin.
+ */
+export function graphLayout(nodes, waveCount) {
+  const byWave = new Map();
+  for (const n of nodes) {
+    if (!byWave.has(n.wave)) byWave.set(n.wave, []);
+    byWave.get(n.wave).push(n);
+  }
+  const out = new Map();
+  for (const [w, list] of byWave) {
+    const bearing = (n) => Math.atan2(n.pos[2], n.pos[0]);
+    list.sort((a, b) => bearing(a) - bearing(b) || a.id.localeCompare(b.id));
+    const radius = 0.22 + 0.035 * list.length;
+    const y = (w - (waveCount - 1) / 2) * 0.28;
+    list.forEach((n, i) => {
+      const a = (i / list.length) * Math.PI * 2 + w * 0.37;
+      out.set(n.id, [+(Math.cos(a) * radius).toFixed(4), +y.toFixed(4), +(Math.sin(a) * radius).toFixed(4)]);
+    });
+  }
+  return out;
 }

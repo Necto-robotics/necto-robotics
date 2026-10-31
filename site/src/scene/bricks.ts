@@ -2,9 +2,9 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 /** Runtime access to the committed data artifacts: bricks.glb (one indexed,
- * unlit-normal mesh per LDraw part; flat-shaded at runtime) and
- * journey-data.json (real car/pyramid build graphs, three.js-space poses,
- * deterministic event tape). */
+ * normal-free mesh per LDraw part; flat-shaded at runtime) and
+ * journey-data.json (the real car build graph in three.js-space poses, its
+ * graph-chapter layout and a deterministic event tape). */
 
 export interface JNode {
   id: string;
@@ -16,6 +16,8 @@ export interface JNode {
   yawY: number;
   wave: number;
   order: number;
+  /** Position in the Assembly Graph chapter layout. */
+  gpos: [number, number, number];
 }
 
 export interface JEdge {
@@ -26,10 +28,12 @@ export interface JEdge {
 
 export interface TapeEvent {
   t: number;
-  type: "job_available" | "job_claimed" | "placement_complete";
-  node: string;
+  type: "job_claimed" | "placement_complete" | "worker_offline" | "lease_expired";
+  node?: string;
   worker?: number;
   lamport: number;
+  /** Derived on each peer; never sent on the wire. */
+  local?: boolean;
 }
 
 export interface JModel {
@@ -42,8 +46,8 @@ export interface JModel {
 }
 
 export interface JourneyData {
+  workers: number;
   car: JModel;
-  pyramid: JModel;
 }
 
 export interface BrickAssets {
@@ -51,11 +55,13 @@ export interface BrickAssets {
   data: JourneyData;
 }
 
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
+
 const base = import.meta.env.BASE_URL;
 
 export async function loadBrickAssets(): Promise<BrickAssets> {
   const [gltf, data] = await Promise.all([
-    new GLTFLoader().loadAsync(`${base}media/bricks.glb`),
+    new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(`${base}media/bricks.glb`),
     fetch(`${base}media/journey-data.json`).then((r) => {
       if (!r.ok) throw new Error(`journey-data ${r.status}`);
       return r.json() as Promise<JourneyData>;

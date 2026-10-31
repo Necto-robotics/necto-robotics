@@ -1,0 +1,57 @@
+/* Loom Robotics design tokens. Strictly monochrome: state is carried by
+   weight, pattern and motion, never by hue. Shared by every page. */
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/inter-tight";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+:root {
+  --ink: #0a0b0c;
+  --ink-2: #1c1e20;
+  --graphite: #3d4044;
+  --steel: #7d8288;
+  --silver: #b9bdc2;
+  --mist: #dfe1e3;
+  --paper: #f2f2f0;
+  --white: #ffffff;
+
+  --font-display: "Inter Tight Variable", "Inter Tight", "Inter", system-ui, sans-serif;
+  --font-body: "Inter Variable", "Inter", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --step--1: clamp(0.8rem, 0.78rem + 0.1vw, 0.875rem);
+  --step-0: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
+  --step-1: clamp(1.2rem, 1.1rem + 0.45vw, 1.45rem);
+  --step-2: clamp(1.6rem, 1.3rem + 1.2vw, 2.4rem);
+  --step-3: clamp(2.2rem, 1.6rem + 2.6vw, 4rem);
+  --step-4: clamp(2.8rem, 1.8rem + 4.6vw, 6.4rem);
+
+  --gutter: clamp(1rem, 0.6rem + 2vw, 2.5rem);
+  --measure: 34rem;
+  --radius: 2px;
+  --ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+  --nav-h: 3.75rem;
+
+  /* Light scheme (default) */
+  --bg: var(--paper);
+  --fg: var(--ink);
+  --fg-2: var(--graphite);
+  --muted: #62666b;
+  --rule: rgba(10, 11, 12, 0.14);
+  --rule-strong: rgba(10, 11, 12, 0.32);
+  --surface: rgba(255, 255, 255, 0.72);
+  --scrim: 242, 242, 240;
+  color-scheme: light;
+}
+
+[data-scheme="dark"] {
+  --bg: #060607;
+  --fg: #eceef0;
+  --fg-2: #c3c7cb;
+  --muted: #8f949a;
+  --rule: rgba(236, 238, 240, 0.14);
+  --rule-strong: rgba(236, 238, 240, 0.34);
+  --surface: rgba(16, 17, 19, 0.72);
+  --scrim: 6, 6, 7;
+  color-scheme: dark;
+}

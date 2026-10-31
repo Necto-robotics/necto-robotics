@@ -1,29 +1,29 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-scheme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Loom Robotics · Decentralized Robotic Construction</title>
+    <title>Loom Robotics · Robots that build together</title>
     <meta
       name="description"
-      content="Loom Robotics develops decentralized robotic construction systems. WEAVE: a swarm of autonomous workers building from a replicated assembly graph with no central controller."
+      content="Loom Robotics develops decentralized robotic construction: fleets of robots that share one plan, claim their own work and verify every placement, with no central controller."
     />
     <link rel="canonical" href="https://loom-robotics.com/" />
     <link rel="icon" href="/images/favicon.svg" type="image/svg+xml" />
-    <meta name="theme-color" content="#15191e" />
+    <meta name="theme-color" content="#f2f2f0" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Loom Robotics" />
     <meta property="og:url" content="https://loom-robotics.com/" />
-    <meta property="og:title" content="Loom Robotics · Decentralized robotic construction" />
+    <meta property="og:title" content="Loom Robotics · Robots that build together" />
     <meta
       property="og:description"
-      content="WEAVE: a swarm of autonomous workers that builds from a replicated assembly graph, with no central controller. Jobs are claimed, never assigned."
+      content="Fleets of robots that share one plan, claim their own work and verify every placement. No central controller."
     />
     <meta property="og:image" content="https://loom-robotics.com/images/og-cover.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="A Loom worker robot on the blueprint build floor" />
+    <meta property="og:image:alt" content="Loom worker robots building on a stone plinth in a daylit concrete hall" />
     <meta name="twitter:card" content="summary_large_image" />
 
     <script type="application/ld+json">
@@ -33,181 +33,276 @@
         "name": "Loom Robotics",
         "url": "https://loom-robotics.com/",
         "logo": "https://loom-robotics.com/images/loom-mark.svg",
-        "description": "Loom Robotics develops decentralized robotic construction systems. WEAVE, the Workload Execution and Autonomous Verification Engine, coordinates a swarm of autonomous workers building from a replicated assembly graph with no central controller.",
+        "description": "Loom Robotics develops decentralized robotic construction. WEAVE, the Workload Execution and Autonomous Verification Engine, coordinates robots that build from a replicated Assembly Graph with no central controller.",
         "sameAs": ["https://github.com/LoomRobotics/LEGOSwarm"]
       }
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Grotesk:wght@500;700&display=swap"
-    />
-    <!-- Legacy brand tokens, shared verbatim with the static pages at the dist root -->
-    <link rel="stylesheet" href="/assets/css/brand.css" />
+    <script>
+      document.documentElement.classList.add("js");
+    </script>
+    <link rel="preload" as="image" href="/media/stills/ch-open.avif" type="image/avif" fetchpriority="high" />
   </head>
-  <body>
-    <a class="skip-link" href="#journey-end">Skip the intro</a>
-    <div id="boot">
-      <p id="boot-mark">
-        <svg class="mark" viewBox="0 0 4172 4092" aria-hidden="true" focusable="false">
-          <g fill="none" stroke="currentColor">
-            <path
-              stroke-width="271"
-              d="M1250 542V1280M1250 1716V3820M2796 508V2829M2796 3266V3580M542 1498H2578M3014 1498H3751M271 3047H1032M1468 3047H3521"
-            />
-            <circle cx="1250" cy="339" r="271" stroke-width="135" />
-            <circle cx="3765" cy="3047" r="325" stroke-width="163" />
-          </g>
-          <g fill="currentColor">
-            <circle cx="542" cy="1498" r="271" />
-            <circle cx="3751" cy="1498" r="271" />
-            <circle cx="271" cy="3047" r="271" />
-            <circle cx="2796" cy="508" r="271" />
-            <circle cx="2796" cy="3580" r="271" />
-            <circle cx="1250" cy="3820" r="271" />
-          </g>
-        </svg>
-        <span>Loom Robotics</span>
-      </p>
-      <div id="boot-rule" role="progressbar" aria-label="Loading"><span></span></div>
-      <p id="boot-status">Loading</p>
-      <nav id="boot-links" aria-label="Site">
-        <a href="/technical.html">WEAVE paper</a>
-        <a href="/devlog.html">Dev Log</a>
-      </nav>
-    </div>
+  <body class="page-home">
+    <!--#include header -->
 
-    <!-- Persistent chrome: the mark rides the top-left corner for the whole
-         journey as the home affordance; the paper and the log stay one click
-         away. Deliberately quiet — it must never compete with the stage. -->
-    <header id="chrome" hidden>
-      <a class="brand" href="/" aria-label="Loom Robotics, back to the start">
-        <svg class="mark" viewBox="0 0 4172 4092" aria-hidden="true" focusable="false">
-          <g fill="none" stroke="currentColor">
-            <path
-              stroke-width="271"
-              d="M1250 542V1280M1250 1716V3820M2796 508V2829M2796 3266V3580M542 1498H2578M3014 1498H3751M271 3047H1032M1468 3047H3521"
-            />
-            <circle cx="1250" cy="339" r="271" stroke-width="135" />
-            <circle cx="3765" cy="3047" r="325" stroke-width="163" />
-          </g>
-          <g fill="currentColor">
-            <circle cx="542" cy="1498" r="271" />
-            <circle cx="3751" cy="1498" r="271" />
-            <circle cx="271" cy="3047" r="271" />
-            <circle cx="2796" cy="508" r="271" />
-            <circle cx="2796" cy="3580" r="271" />
-            <circle cx="1250" cy="3820" r="271" />
-          </g>
-        </svg>
-        <span class="brand-name">Loom<span> Robotics</span></span>
-      </a>
-      <nav class="chrome-nav" aria-label="Primary">
-        <a href="/technical.html">WEAVE paper</a>
-        <a href="/devlog.html">Dev log</a>
-      </nav>
-    </header>
-
-    <div id="journey" hidden>
-      <div id="journey-stage">
-        <canvas id="stage-canvas" aria-hidden="true"></canvas>
-        <div id="journey-ui"></div>
+    <main id="main">
+      <!-- The stage: one sticky canvas behind every chapter. The poster is the
+           same frame the engine draws first, so the canvas fades in over it. -->
+      <div class="stage" aria-hidden="true">
+        <picture class="stage__poster">
+          <source srcset="/media/stills/ch-open.avif" type="image/avif" />
+          <img src="/media/stills/ch-open.jpg" alt="" width="1920" height="1080" />
+        </picture>
+        <canvas class="stage__canvas"></canvas>
+        <div class="stage__ui"></div>
       </div>
-    </div>
 
-    <!-- Static journey: reduced-motion / no-WebGL / crawlers. Same copy the
-         live journey renders; unhidden by main.ts when the engine can't run. -->
-    <section id="static-journey" hidden aria-label="The LEGOSwarm story">
-      <article class="static-panel">
-        <img src="media/stills/act-brand.jpg" alt="A dozen worker robots spread across a dark blueprint grid, their status rings lit blue and green."
-             width="1265" height="720" loading="lazy" decoding="async" />
-        <span class="eyebrow">Loom Robotics</span>
-        <h1>Decentralized robotic construction.</h1>
-        <p>WEAVE, the Workload Execution and Autonomous Verification Engine: a swarm that builds from a replicated assembly graph, with no one in charge.</p>
-      </article>
-      <article class="static-panel">
-        <img src="media/stills/act-swarm.jpg" alt="Workers circulating the build floor on separate lanes; one sits still with a red fault ring while the rest carry on."
-             width="1265" height="720" loading="lazy" decoding="async" />
-        <span class="eyebrow">The swarm</span>
-        <h2>No central controller.</h2>
-        <p>Every worker carries its own copy of the build plan and pulls its own work. Jobs are claimed, never assigned. About three events per job, no polling. Lose a robot and its lease simply expires.</p>
-      </article>
-      <article class="static-panel">
-        <img src="media/stills/act-worker.jpg" alt="A single Worker V1 in close view: differential-drive base, four-jointed arm, camera mast and a lit white status ring."
-             width="1265" height="720" loading="lazy" decoding="async" />
-        <span class="eyebrow">Worker V1</span>
-        <h2>One worker.</h2>
-        <p>A differential-drive base, a 4-DOF arm, one camera. A Raspberry Pi 5 runs the ROS 2 peer stack while a Pico 2 W handles motors in real time. The base does coarse positioning; the arm does fine placement.</p>
-      </article>
-      <article class="static-panel">
-        <img src="media/stills/act-perceive.jpg" alt="A real photograph from worker-001's camera: loose LEGO parts on a white surface, each ringed by an orange detection box labelled with its part number and confidence, with the target build drawn beside them as orange wireframe."
-             width="1265" height="720" loading="lazy" decoding="async" />
-        <span class="eyebrow">Through the worker's eye</span>
-        <h2>One camera, no ground truth.</h2>
-        <p>A real frame from worker-001's camera, with the detector's own output on it: part number and confidence, after the inventory and geometry gates. The learned detector scores 70% against a 29% classical baseline on the worker's own imagery. Against it stands the desired state, the plan, one dependency wave at a time.</p>
-      </article>
-      <article class="static-panel">
-        <img src="media/stills/act-place.jpg" alt="The finished thirteen-brick pyramid on the build floor, a worker alongside it."
-             width="1265" height="720" loading="lazy" decoding="async" />
-        <span class="eyebrow">Build → Verify → Continue</span>
-        <h2>Place, then prove it.</h2>
-        <p>A placement is never complete until it is verified against the plan. Pass, and dependents unlock. Fail, and the job is released for another worker to retry. Thirteen bricks across four dependency waves, assembled in the real build order from the real assembly graph.</p>
-      </article>
-      <article class="static-panel">
-        <img src="media/stills/act-graph.jpg" alt="The same pyramid overlaid with its assembly graph: one labelled chip per brick showing the job state and which worker completed it."
-             width="1265" height="720" loading="lazy" decoding="async" />
-        <span class="eyebrow">Assembly Graph</span>
-        <h2>A shared blueprint.</h2>
-        <p>Every robot carries this graph: replicated, versioned, event-sourced, convergent. Each brick is a job node. Jobs unlock as their supports complete, a claim is three events on the wire, and a dead worker's lease simply expires.</p>
-      </article>
-      <article class="static-panel">
-        <img src="media/stills/act-close.jpg" alt="A worker at rest beside the completed build, the blueprint grid receding into the dark."
-             width="1265" height="720" loading="lazy" decoding="async" />
-        <span class="eyebrow">This is WEAVE</span>
-        <h2>No single robot holds the master plan.</h2>
-        <p>Yet every robot knows exactly where the project stands. Everything above is our simulation, rendered live. Hardware bring-up is underway.</p>
-      </article>
-    </section>
+      <nav class="chapter-index" aria-label="Chapters">
+        <ol>
+          <li><a href="#open"><span>00</span> Open</a></li>
+          <li><a href="#worker"><span>01</span> The worker</a></li>
+          <li><a href="#inside"><span>02</span> Inside</a></li>
+          <li><a href="#together"><span>03</span> Building together</a></li>
+          <li><a href="#plan"><span>04</span> The shared plan</a></li>
+          <li><a href="#beyond"><span>05</span> Beyond the arena</a></li>
+          <li><a href="#status"><span>06</span> Where it stands</a></li>
+        </ol>
+      </nav>
 
-    <footer id="journey-end" hidden>
-      <section class="proof">
-        <span class="eyebrow">Measured, in simulation</span>
-        <h2>Proof points</h2>
-        <div class="proof-grid">
-          <div class="tile"><strong>&minus;&#8531; robots</strong><span>kill a third of the swarm mid-build and the build still finishes, with no double placements</span></div>
-          <div class="tile"><strong>&le;5 mm</strong><span>cumulative placement drift, single worker; 2 mm on a two-robot coalition build</span></div>
-          <div class="tile"><strong>~3 events</strong><span>per job on the wire: claim, place, done. No polling, no central scheduler</span></div>
-          <div class="tile"><strong>70% vs 29%</strong><span>learned detector v5 against the classical baseline, on the worker&rsquo;s own camera imagery</span></div>
-          <div class="tile"><strong>24,293 parts</strong><span>LEGO geometry characterized for the build-plan compiler, in about seven minutes</span></div>
-          <div class="tile"><strong>0 bosses</strong><span>coalitions form by decentralized auction: the nearest idle peer wins the job</span></div>
+      <section class="chapter chapter--open" id="open" data-chapter="open" data-scheme="light" aria-labelledby="open-title">
+        <div class="chapter__copy">
+          <p class="label">Loom Robotics</p>
+          <h1 id="open-title">Robots that build&nbsp;together.</h1>
+          <p class="lead">
+            We develop decentralized robotic construction: fleets of robots that share one plan, choose their own work
+            and check every placement. No central controller.
+          </p>
+          <p class="sub">
+            LEGOSwarm is our research platform. Its robots assemble LEGO structures, a precise and testable stand-in
+            for structured physical work.
+          </p>
+          <div class="actions">
+            <a class="btn btn--solid" href="/technical.html">
+              Read the white paper <svg class="arrow" aria-hidden="true"><use href="#arrow" /></svg>
+            </a>
+            <a class="btn" href="#worker">See how it works</a>
+          </div>
+          <p class="chip" data-kind="viz">Visualization</p>
         </div>
+        <figure class="still"><picture><source srcset="/media/stills/ch-open.avif" type="image/avif" /><img src="/media/stills/ch-open.jpg" alt="A wide daylit concrete hall; small white robots work on a stone plinth at its centre." loading="lazy" width="1920" height="1080" /></picture></figure>
       </section>
 
-      <section class="roadmap-dark">
-        <span class="eyebrow">Roadmap</span>
-        <h2>Where the platform stands</h2>
-        <ul>
-          <li><span class="pill done">Done</span> Decentralized coordination: replicated graph, leases, recovery</li>
-          <li><span class="pill done">Done</span> Multi-robot builds with coalitions for heavy parts</li>
-          <li><span class="pill done">Done</span> Full builds from onboard vision alone (simulation)</li>
-          <li><span class="pill current">Now</span> Worker hardware bring-up: drivetrain on the bench</li>
-          <li><span class="pill next">Next</span> Sim-to-real: the same software on physical workers</li>
-        </ul>
+      <section class="chapter" id="worker" data-chapter="worker" data-scheme="dark" aria-labelledby="worker-title">
+        <div class="chapter__copy">
+          <p class="label"><span class="idx">01</span> The worker</p>
+          <h2 id="worker-title">One robot, built to be one of many.</h2>
+          <p>
+            Each worker is a self-contained mobile manipulator. A two-wheeled base handles coarse positioning across
+            the build field. A compact arm handles fine placement.
+          </p>
+          <p>
+            Onboard AI compute runs perception, planning and the swarm software. Beside it, a real-time
+            microcontroller keeps the wheels and the safe state on time.
+          </p>
+          <p class="chip" data-kind="viz">Artistic visualization</p>
+        </div>
+        <figure class="still"><picture><source srcset="/media/stills/ch-worker.avif" type="image/avif" /><img src="/media/stills/ch-worker.jpg" alt="A single white worker robot with an articulated arm and a depth camera, lit on black." loading="lazy" width="1920" height="1080" /></picture></figure>
       </section>
 
-      <div class="end-inner">
-        <span class="eyebrow">Go deeper</span>
-        <h2>The research is real.</h2>
-        <p>The white paper covers the architecture end to end; the dev log records every step, including the failures.</p>
-        <nav aria-label="Primary">
-          <a href="/technical.html">Read the WEAVE paper</a>
-          <a href="/devlog.html">Dev Log</a>
-          <a href="https://github.com/LoomRobotics/LEGOSwarm">GitHub</a>
-        </nav>
-      </div>
-    </footer>
+      <section class="chapter chapter--long" id="inside" data-chapter="inside" data-scheme="dark" aria-labelledby="inside-title">
+        <div class="chapter__copy">
+          <p class="label"><span class="idx">02</span> Inside the worker</p>
+          <h2 id="inside-title">Every assembly has one job.</h2>
+          <p>Taken apart, the worker is a short list of clear responsibilities. Select one to see what it does.</p>
+          <ul class="parts" data-parts>
+            <li>
+              <button type="button" data-part="drive" aria-describedby="part-drive">
+                <span class="parts__name">Drive modules</span><span class="parts__tag">In bring-up</span>
+              </button>
+              <p id="part-drive">Two geared motors with encoders turn the wheels. The base gets the robot close; the arm does the rest.</p>
+            </li>
+            <li>
+              <button type="button" data-part="compute" aria-describedby="part-compute">
+                <span class="parts__name">Onboard AI compute</span><span class="parts__tag">In bring-up</span>
+              </button>
+              <p id="part-compute">An octa-core Linux processor with an NPU of up to 40 TOPS runs perception, planning and the swarm. A real-time microcontroller owns the wheels and the safe state.</p>
+            </li>
+            <li>
+              <button type="button" data-part="camera" aria-describedby="part-camera">
+                <span class="parts__name">RGB-D camera</span><span class="parts__tag">Proposed</span>
+              </button>
+              <p id="part-camera">Colour plus depth. It finds parts, guides the grasp and checks each placement.</p>
+            </li>
+            <li>
+              <button type="button" data-part="arm" aria-describedby="part-arm">
+                <span class="parts__name">Arm</span><span class="parts__tag">Undecided</span>
+              </button>
+              <p id="part-arm">An articulated arm for local positioning and controlled insertion. Its actuators are still being chosen.</p>
+            </li>
+            <li>
+              <button type="button" data-part="gripper" aria-describedby="part-gripper">
+                <span class="parts__name">Gripper</span><span class="parts__tag">Proposed</span>
+              </button>
+              <p id="part-gripper">Compliant and force-limited, so a brick seats firmly without pushing the robot back.</p>
+            </li>
+            <li>
+              <button type="button" data-part="power" aria-describedby="part-power">
+                <span class="parts__name">Power</span><span class="parts__tag">Proposed</span>
+              </button>
+              <p id="part-power">One battery behind a main fuse. The main switch is the hard stop.</p>
+            </li>
+            <li>
+              <button type="button" data-part="status" aria-describedby="part-status">
+                <span class="parts__name">Status lights</span><span class="parts__tag">Proposed</span>
+              </button>
+              <p id="part-status">Show the robot's state to people nearby. They display; they never decide.</p>
+            </li>
+            <li>
+              <button type="button" data-part="chassis" aria-describedby="part-chassis">
+                <span class="parts__name">Chassis</span><span class="parts__tag">Proposed</span>
+              </button>
+              <p id="part-chassis">A low, stiff frame that keeps the battery and electronics close to the floor.</p>
+            </li>
+          </ul>
+          <figure class="feed">
+            <img src="/media/feed.jpg" alt="A real frame from the prototype camera: loose LEGO parts on a table, each boxed with the detector's part number and confidence." loading="lazy" width="1280" height="720" />
+            <figcaption><span class="chip" data-kind="real">Real capture</span> A frame from our prototype camera, with the trained detector's own output.</figcaption>
+          </figure>
+        </div>
+        <figure class="still"><picture><source srcset="/media/stills/ch-inside.avif" type="image/avif" /><img src="/media/stills/ch-inside.jpg" alt="The worker separated into its assemblies: wheels, chassis, battery, compute board, shell, status ring, camera, arm and gripper." loading="lazy" width="1920" height="1080" /></picture></figure>
+      </section>
 
+      <section class="chapter chapter--long" id="together" data-chapter="together" data-scheme="light" aria-labelledby="together-title">
+        <div class="chapter__copy">
+          <p class="label"><span class="idx">03</span> Building together</p>
+          <h2 id="together-title">Many robots. One build.</h2>
+          <p>
+            Every worker carries a copy of the same plan, the Assembly Graph. Each brick is a job. A job becomes
+            available only when the bricks beneath it are complete.
+          </p>
+          <ol class="steps">
+            <li><strong>Claim.</strong> A free robot claims an available job and tells its peers. Ties resolve the same way on every robot.</li>
+            <li><strong>Build.</strong> It fetches the part, drives in and places it.</li>
+            <li><strong>Verify.</strong> It checks the placement against the plan before calling it complete.</li>
+            <li><strong>Continue.</strong> Completion unlocks the jobs that depend on it.</li>
+          </ol>
+          <p>
+            About two messages per job. No polling, no scheduler. If a robot stops mid-job, its claim expires and a
+            peer takes over. In simulation, builds still complete after losing a third of the robots.
+          </p>
+          <p class="chip" data-kind="viz">Visualization · real 61-brick assembly graph</p>
+        </div>
+        <figure class="still"><picture><source srcset="/media/stills/ch-together.avif" type="image/avif" /><img src="/media/stills/ch-together.jpg" alt="Six robots around a half-built LEGO model; thin lines link each robot to the brick it has claimed." loading="lazy" width="1920" height="1080" /></picture></figure>
+      </section>
+
+      <section class="chapter chapter--long" id="plan" data-chapter="plan" data-scheme="dark" aria-labelledby="plan-title">
+        <div class="chapter__copy">
+          <p class="label"><span class="idx">04</span> The shared plan</p>
+          <h2 id="plan-title">No single robot holds the master plan.</h2>
+          <p>
+            Yet every robot knows where the project stands. WEAVE, the Workload Execution and Autonomous
+            Verification Engine, treats construction as a shared record of events, not a stream of commands.
+          </p>
+          <ul class="concepts" data-concepts>
+            <li>
+              <button type="button" data-concept="intent" aria-describedby="concept-intent"><span class="idx">A</span> Human intent</button>
+              <p id="concept-intent">People define the outcome. It is authored once into the plan, and robots never rewrite it.</p>
+            </li>
+            <li>
+              <button type="button" data-concept="graph" aria-describedby="concept-graph"><span class="idx">B</span> Assembly Graph</button>
+              <p id="concept-graph">The authoritative plan: one node per job, edges for what must come first. Every robot holds a versioned replica.</p>
+            </li>
+            <li>
+              <button type="button" data-concept="execution" aria-describedby="concept-execution"><span class="idx">C</span> Distributed execution</button>
+              <p id="concept-execution">Robots pull work; nobody assigns it. A claim is a lease that must be renewed, so a silent robot's work reopens on its own.</p>
+            </li>
+            <li>
+              <button type="button" data-concept="log" aria-describedby="concept-log"><span class="idx">D</span> Event log</button>
+              <p id="concept-log">An append-only history of claims, placements and revisions. Replaying it brings every robot to the same state.</p>
+            </li>
+            <li>
+              <button type="button" data-concept="verify" aria-describedby="concept-verify"><span class="idx">E</span> Local verification</button>
+              <p id="concept-verify">Each robot checks its own work against the plan. A failure releases the job for a retry instead of passing the error on.</p>
+            </li>
+          </ul>
+          <a class="btn" href="/technical.html">Read the architecture <svg class="arrow" aria-hidden="true"><use href="#arrow" /></svg></a>
+        </div>
+        <figure class="still"><picture><source srcset="/media/stills/ch-plan.avif" type="image/avif" /><img src="/media/stills/ch-plan.jpg" alt="The bricks lifted into a floating graph: rings of nodes by dependency wave around a central core, with robot replicas in orbit." loading="lazy" width="1920" height="1080" /></picture></figure>
+      </section>
+
+      <section class="chapter" id="beyond" data-chapter="beyond" data-scheme="dark" aria-labelledby="beyond-title">
+        <div class="chapter__copy">
+          <p class="label"><span class="idx">05</span> Beyond the arena</p>
+          <h2 id="beyond-title">Made for places where coordination is hard.</h2>
+          <p>
+            LEGO is the proving ground: precise, repeatable and honest about every mistake. The architecture aims at
+            structured physical work wherever links are slow, networks split and machines fail. Remote sites.
+            Hazardous ground. One day, construction beyond Earth.
+          </p>
+          <p class="chip" data-kind="concept">Concept · not a current capability</p>
+        </div>
+        <figure class="still"><picture><source srcset="/media/stills/ch-beyond.avif" type="image/avif" /><img src="/media/stills/ch-beyond.jpg" alt="Concept: a fleet of robots assembling a low modular structure on a grey lunar plain under a black sky." loading="lazy" width="1920" height="1080" /></picture></figure>
+      </section>
+
+      <section class="chapter chapter--close" id="status" data-chapter="status" data-scheme="light" aria-labelledby="status-title">
+        <div class="chapter__copy">
+          <p class="label"><span class="idx">06</span> Where it stands</p>
+          <h2 id="status-title">Proven in simulation. Now in hardware.</h2>
+        </div>
+        <div class="status">
+          <article>
+            <h3><span class="status__mark" data-state="done"></span>Built in simulation</h3>
+            <ul>
+              <li>Replicated Assembly Graph over a peer-to-peer bus</li>
+              <li>Multi-robot builds, with teams for oversized jobs</li>
+              <li>Builds that survive losing robots mid-job</li>
+              <li>Digital twin with overhead reconciliation</li>
+              <li>Vision-guided grasping and verification</li>
+              <li>WEAVE operator app, replay-first</li>
+            </ul>
+          </article>
+          <article>
+            <h3><span class="status__mark" data-state="now"></span>In hardware bring-up</h3>
+            <ul>
+              <li>The worker's onboard computer and real-time firmware</li>
+              <li>Drive motors and the safe state</li>
+              <li>A trained part detector moving onto the robot's NPU</li>
+            </ul>
+          </article>
+          <article>
+            <h3><span class="status__mark" data-state="next"></span>Ahead</h3>
+            <ul>
+              <li>Choosing the arm</li>
+              <li>A single robot assembling on hardware</li>
+              <li>Several robots building together</li>
+            </ul>
+          </article>
+        </div>
+        <div class="cards">
+          <a class="card card--primary" href="/technical.html">
+            <span class="label">White paper</span>
+            <strong>WEAVE: the Workload Execution and Autonomous Verification Engine</strong>
+            <span>Event sourcing, leases and Build, Verify, Continue for swarm assembly.</span>
+            <svg class="arrow" aria-hidden="true"><use href="#arrow" /></svg>
+          </a>
+          <a class="card" href="/devlog.html">
+            <span class="label">Dev log</span>
+            <strong>Engineering journal</strong>
+            <span>What was built, when, and what it taught us.</span>
+            <svg class="arrow" aria-hidden="true"><use href="#arrow" /></svg>
+          </a>
+          <a class="card" href="https://github.com/LoomRobotics/LEGOSwarm" rel="noopener">
+            <span class="label">Source</span>
+            <strong>GitHub</strong>
+            <span>The LEGOSwarm project.</span>
+            <svg class="arrow" aria-hidden="true"><use href="#arrow" /></svg>
+          </a>
+        </div>
+        <figure class="still"><picture><source srcset="/media/stills/ch-status.avif" type="image/avif" /><img src="/media/stills/ch-status.jpg" alt="The hall at dusk; the finished LEGO model on the plinth with the robots parked around it." loading="lazy" width="1920" height="1080" /></picture></figure>
+      </section>
+    </main>
+
+    <!--#include footer -->
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

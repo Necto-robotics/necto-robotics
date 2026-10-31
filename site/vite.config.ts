@@ -1,5 +1,5 @@
 import { defineConfig, type Plugin } from "vite";
-import { createReadStream, existsSync, statSync } from "node:fs";
+import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import { extname, join, resolve } from "node:path";
 
 // The journey deploys under /next/ (staging) until JOURNEY_AT_ROOT=1 flips it to /.
@@ -98,19 +98,41 @@ function serveLegacyAssets(): Plugin {
   };
 }
 
+// Shared chrome: <!--#include header --> / <!--#include footer --> are
+// replaced at build (and dev) time with partials/*.html, so every page gets
+// the same navigation and footer with no runtime JS. The link for the
+// current page gets aria-current="page".
+function includePartials(): Plugin {
+  const dir = resolve(import.meta.dirname, "partials");
+  return {
+    name: "loom-include-partials",
+    transformIndexHtml: {
+      order: "pre",
+      handler(html, ctx) {
+        const page = (ctx.filename.split(/[\\/]/).pop() ?? "index.html").replace(".html", "");
+        return html.replace(/<!--#include (\w+) -->/g, (_, name: string) => {
+          const partial = readFileSync(join(dir, `${name}.html`), "utf8");
+          return partial.replace(`data-page="${page}"`, `data-page="${page}" aria-current="page"`);
+        });
+      },
+    },
+  };
+}
+
 export default defineConfig({
   base: atRoot ? "/" : "/next/",
-  plugins: [serveLegacyAssets()],
-  define: {
-    // Whether an authored hero model was present at build time. Without this
-    // the loader's probe would 404 on every production load until the CAD
-    // lands. Dev still probes at runtime, so dropping the file in just works.
-    __HAS_HERO_MODEL__: JSON.stringify(existsSync(resolve(repoRoot, "site/public/media/worker.glb"))),
-  },
+  plugins: [includePartials(), serveLegacyAssets()],
   build: {
     outDir: "dist-vite",
     assetsDir: "app",
     emptyOutDir: true,
     target: "es2022",
+    rollupOptions: {
+      input: {
+        index: resolve(import.meta.dirname, "index.html"),
+        technical: resolve(import.meta.dirname, "technical.html"),
+        devlog: resolve(import.meta.dirname, "devlog.html"),
+      },
+    },
   },
 });

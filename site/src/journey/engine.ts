@@ -1,288 +1,324 @@
 import * as THREE from "three";
-import gsap from "gsap";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { BEATS, buildBeatTable, locate, type BeatPosition } from "./beats";
-import { createStage } from "./stage";
-import { CameraDirector } from "./camera-director";
-import { ExploreMode } from "./explore";
-import { Overlays, type PinProjection } from "./overlays";
-import { createScrollRig } from "./scroll";
-import { PhysicalRealm } from "./physical-realm";
-import { PerceptionRealm } from "./perception-realm";
-import { FeedSource } from "../scene/feed";
-import { loadHeroWorker } from "../scene/hero-model";
-import { loadBrickAssets } from "../scene/bricks";
-import { Structure } from "../scene/structure";
-import { bindKeys } from "../a11y/keys";
 import type { TierReport } from "../perf/tier";
+import { createStage, type Stage } from "./stage";
+import { createEnvironments } from "./env";
+import { Progress } from "./progress";
+import { Director, curve } from "./director";
+import { CAMERA_KEYS, HERO } from "./choreography";
+import { Governor } from "./governor";
+import { loadGLB } from "../scene/assets";
+import { loadBrickAssets } from "../scene/bricks";
+import { createHall } from "../scene/hall";
+import { Build } from "../scene/build";
+import { Robot, POSES, partOf } from "../scene/robot";
+import { GraphRealm } from "../scene/graph";
+import { initChapterIndex } from "../ui/chapter-index";
+import { Hud } from "../ui/hud";
+import { PartTags } from "../ui/part-tags";
+import { ConceptTags } from "../ui/concept-tags";
 
-/** Journey engine: owns the beat table, the render loop, and the wiring
- * between scroll, camera rails, free-explore, and the DOM overlays. */
+/** Story timeline: every visual parameter is a function of u. */
+const T = {
+  daylight: curve([[0, 1], [1.05, 1], [1.5, 0], [2.86, 0], [3.1, 1], [3.82, 1], [4.12, 0], [5.9, 0], [6.04, 1]]),
+  studio: curve([[1.02, 0], [1.5, 1], [2.86, 1], [3.06, 0]]),
+  explode: curve([[2.1, 0], [2.44, 1], [2.68, 1], [2.92, 0]]),
+  dusk: curve([[5.9, 0], [6.05, 0.5], [6.8, 0.85]]),
+  lines: curve([[2.9, 0], [3.12, 1], [3.86, 1], [3.98, 0]]),
+  graph: curve([[3.86, 0], [4.36, 1], [4.86, 1], [4.98, 0]]),
+  blackout: curve([[4.78, 0], [4.93, 1], [5.04, 0], [5.84, 0], [5.95, 1], [6.06, 0]]),
+  hud: (u: number) => (u > 3.08 && u < 3.9 ? 1 : 0),
+  drift: curve([[0, 1], [0.6, 0.4], [1.4, 0.6], [2.0, 0], [3.0, 0], [6.2, 0.6]]),
+};
 
-export interface JourneyHandle {
-  destroy(): void;
-}
+export async function mountJourney(report: TierReport): Promise<void> {
+  const stageEl = document.querySelector<HTMLElement>(".stage")!;
+  const canvas = stageEl.querySelector<HTMLCanvasElement>(".stage__canvas")!;
+  const ui = stageEl.querySelector<HTMLElement>(".stage__ui")!;
+  const params = new URLSearchParams(location.search);
+  const tier = report.tier;
 
-export async function mountJourney(tier: TierReport): Promise<JourneyHandle> {
-  const container = document.getElementById("journey");
-  const canvasEl = document.getElementById("stage-canvas") as HTMLCanvasElement | null;
-  const ui = document.getElementById("journey-ui");
-  if (!container || !canvasEl || !ui) throw new Error("journey mounts missing");
-  // Re-bound so the narrowing survives into the closures below.
-  const canvas = canvasEl;
-  const stageEl = document.getElementById("journey-stage");
-  container.hidden = false;
+  const [workerGltf, fleetGltf, hallGltf, bricks] = await Promise.all([
+    loadGLB("worker.glb"),
+    tier === "low" ? loadGLB("worker-lod.glb") : Promise.resolve(null),
+    loadGLB("hall.glb"),
+    loadBrickAssets(),
+  ]);
 
-  const assets = await loadBrickAssets();
   const stage = createStage(canvas, tier);
+  const { scene, camera, renderer } = stage;
+  scene.background = new THREE.Color(0x000000);
+  const envs = createEnvironments(renderer);
+  scene.environment = envs.hall;
 
-  // One-time axis/pose calibration view: renders the full car + pyramid from
-  // the real assembly data under free orbit. `/next/?debug=assembly`
-  if (new URLSearchParams(location.search).get("debug") === "assembly") {
-    return mountAssemblyDebug(stage, assets, canvas);
-  }
+  const hall = createHall(hallGltf, tier);
+  scene.add(hall.group);
 
-  const table = buildBeatTable(BEATS);
-  // Authored hero model if one has been exported and passes the contract;
-  // otherwise the procedural greybox, silently.
-  const hero = await loadHeroWorker(import.meta.env.BASE_URL);
-  const realm = new PhysicalRealm(stage.scene, assets, tier, hero);
-  const worker = realm.worker;
-
-  // Act 4 renders in camera space, so the camera has to be in the graph.
-  stage.scene.add(stage.camera);
-  const feed = await FeedSource.load(import.meta.env.BASE_URL).catch((err) => {
-    console.warn("[loom] camera feed unavailable; Act 4 falls back to the stage", err);
-    return null;
+  const shadows = tier !== "low";
+  const build = new Build({
+    model: bricks.data.car,
+    geometries: bricks.geometries,
+    robotTemplate: (fleetGltf ?? workerGltf).scene,
+    workers: bricks.data.workers,
+    plinthTop: hall.plinthTop,
+    shadows,
   });
-  const perception = new PerceptionRealm(stage.camera, assets, feed);
+  scene.add(build.group);
 
-  const director = new CameraDirector(stage.camera, table.beats);
-  const explore = new ExploreMode(stage.camera, canvas);
-  const scroll = createScrollRig(container, table);
-  const isTouch = matchMedia("(pointer: coarse)").matches;
+  // The hero: one robot parked at the front of the plinth, presented in the
+  // studio chapters and taken apart in chapter 02.
+  const hero = new Robot(workerGltf.scene, { unique: true, shadows });
+  hero.root.position.set(HERO.pos[0], hall.plinthTop, HERO.pos[2]);
+  hero.root.rotation.y = HERO.heading;
+  hero.setPose(POSES.display);
+  hero.setGrip(1);
+  hero.setStatus(3.5);
+  scene.add(hero.root);
 
-  let pos: BeatPosition = locate(table, 0);
+  // Studio rig: a key softbox, a rim and a glossy black floor under the hero.
+  const key = new THREE.SpotLight(0xffffff, 0, 6, Math.PI / 7, 0.85, 1.4);
+  key.position.set(HERO.pos[0] + 1.1, 1.5, HERO.pos[2] + 1.3);
+  key.target = hero.root;
+  key.castShadow = shadows;
+  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.bias = -0.0005;
+  key.shadow.radius = 4;
+  const rim = new THREE.DirectionalLight(0xffffff, 0);
+  rim.position.set(HERO.pos[0] - 1.6, 1.1, HERO.pos[2] - 1.4);
+  rim.target = hero.root;
+  const fill = new THREE.PointLight(0xffffff, 0, 3, 2);
+  fill.position.set(HERO.pos[0] - 0.4, 0.5, HERO.pos[2] + 1.2);
+  scene.add(key, rim, fill);
+  const studioFloor = new THREE.Mesh(
+    new THREE.CircleGeometry(1.6, 96),
+    new THREE.MeshStandardMaterial({ color: 0x030303, roughness: 0.55, metalness: 0.0, transparent: true, opacity: 0 })
+  );
+  studioFloor.rotation.x = -Math.PI / 2;
+  studioFloor.position.set(HERO.pos[0], hall.plinthTop + 0.0008, HERO.pos[2]);
+  studioFloor.receiveShadow = shadows;
+  scene.add(studioFloor);
 
-  const overlays = new Overlays(ui, table.beats, {
-    onBeatDot(i) {
-      exitExplore();
-      scroll.scrollToHold(i);
-    },
-    onHotspot(spec) {
-      worker.setHighlight(spec ? spec.anchor : null);
-    },
-    onInspectTap: () => enterExplore(),
-    onResume: () => exitExplore(),
+  const graph = new GraphRealm({ build, plinthTop: hall.plinthTop, tier });
+  scene.add(graph.group);
+
+  // Lunar concept: loaded lazily when the reader nears chapter 05.
+  let lunar: import("../scene/lunar").LunarRealm | null = null;
+  let lunarLoading = false;
+  const ensureLunar = () => {
+    if (lunar || lunarLoading) return;
+    lunarLoading = true;
+    import("../scene/lunar")
+      .then(async (m) => {
+        lunar = await m.createLunar({ robotTemplate: (fleetGltf ?? workerGltf).scene, tier, renderer });
+      })
+      .catch((e) => console.warn("[loom] lunar realm unavailable", e));
+  };
+
+  const progress = new Progress();
+  const director = new Director(CAMERA_KEYS);
+  director.cut = report.reducedMotion;
+  const setChapter = initChapterIndex(null);
+  const hud = new Hud(ui);
+  const tags = new PartTags(ui, hero, camera);
+  const concepts = new ConceptTags(ui, graph, camera);
+  const governor = new Governor(stage);
+
+  // Desktop leaves the left third for copy; phones split screen instead.
+  const applyLayout = () => {
+    stage.lensShift = matchMedia("(min-width: 48rem)").matches ? 0.3 : 0;
+    stage.resize();
+    progress.measure();
+  };
+  applyLayout();
+  addEventListener("resize", applyLayout);
+
+  // Pointer picking on the hero (chapter 02) and graph (chapter 04).
+  const pointer = new THREE.Vector2(9, 9);
+  canvas.parentElement!.addEventListener("pointermove", (e) => {
+    const r = canvas.getBoundingClientRect();
+    pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   });
-
-  function enterExplore() {
-    const spec = pos.beat.explore;
-    if (!spec || explore.active || !scroll.state.settled || director.mode !== "rails") return;
-    director.beginExplore();
-    explore.enter(spec, isTouch);
-    if (isTouch) {
-      scroll.stopInput();
-      canvas.style.touchAction = "none";
+  document.addEventListener("pointermove", (e) => {
+    if (!(e.target as HTMLElement).closest?.(".stage")) {
+      const r = canvas.getBoundingClientRect();
+      pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     }
-  }
-
-  function exitExplore(): boolean {
-    if (!explore.active) return false;
-    explore.exit();
-    if (isTouch) {
-      scroll.resumeInput();
-      canvas.style.touchAction = "";
-    }
-    director.endExplore({ index: pos.index, beat: pos.beat, localT: pos.beat.holdAt });
-    return true;
-  }
-
-  // Desktop: a real drag on the canvas (while settled on an explore beat)
-  // enters free-explore; wheel anywhere exits it and resumes the journey.
-  let downAt: { x: number; y: number } | null = null;
-  const onPointerDown = (e: PointerEvent) => {
-    if (e.isPrimary) downAt = { x: e.clientX, y: e.clientY };
-  };
-  const onPointerMove = (e: PointerEvent) => {
-    if (!downAt || explore.active || isTouch) return;
-    if (Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 6) enterExplore();
-  };
-  const onPointerUp = () => {
-    downAt = null;
-  };
-  const onWheel = () => {
-    if (explore.active && !isTouch) exitExplore();
-  };
-  canvas.addEventListener("pointerdown", onPointerDown);
-  canvas.addEventListener("pointermove", onPointerMove);
-  window.addEventListener("pointerup", onPointerUp);
-  window.addEventListener("wheel", onWheel, { passive: true });
-
-  // The chrome mark is a real link (middle-click, right-click, no-JS all work),
-  // but while the journey is mounted "home" means the top of the journey.
-  const brandLink = document.querySelector<HTMLAnchorElement>("#chrome .brand");
-  const onBrandClick = (e: MouseEvent) => {
-    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    e.preventDefault();
-    exitExplore();
-    scroll.scrollToHold(0);
-  };
-  brandLink?.addEventListener("click", onBrandClick);
-
-  const unbindKeys = bindKeys({
-    next: () => scroll.scrollToHold(scroll.state.holdIndex + 1),
-    prev: () => scroll.scrollToHold(scroll.state.holdIndex - 1),
-    first: () => scroll.scrollToHold(0),
-    last: () => scroll.scrollToHold(table.holds.length - 1),
-    exitExplore,
   });
+  const raycaster = new THREE.Raycaster();
 
-  const tmp = new THREE.Vector3();
-  /** World point → screen px. Anchors behind the camera project to mirrored
-   * coordinates, and off-frame anchors would pile up against the viewport
-   * edges (into the fixed chrome), so both are culled here. */
-  const projectPoint = (world: THREE.Vector3): PinProjection => {
-    tmp.copy(world).applyMatrix4(stage.camera.matrixWorldInverse);
-    const inFront = tmp.z < -stage.camera.near;
-    tmp.applyMatrix4(stage.camera.projectionMatrix);
-    const x = ((tmp.x + 1) / 2) * canvas.clientWidth;
-    const y = ((1 - tmp.y) / 2) * canvas.clientHeight;
-    const inFrame = x >= 0 && y >= 0 && x <= canvas.clientWidth && y <= canvas.clientHeight;
-    return { x, y, visible: inFront && inFrame };
-  };
-  const worldTmp = new THREE.Vector3();
-  const project = (anchor: string): PinProjection | null => {
-    const obj = worker.nodes[anchor];
-    if (!obj) return null;
-    return projectPoint(obj.getWorldPosition(worldTmp));
-  };
+  // Ambient build clock: chapter 00 plays the tape slowly on its own; later
+  // chapters take over from wherever it stopped.
+  const T0 = build.makespan * 0.14;
+  let ambientTau = T0;
+  let paused = false;
+  let uOverride: number | null = null;
+  let last = performance.now();
+  let time = 0;
+  let fixedTime: number | null = null;
 
-  // DEV route: export the static-variant stills from every beat's hold pose.
-  if (import.meta.env.DEV && new URLSearchParams(location.search).get("capture") === "stills") {
-    const { exportStills } = await import("./still-export");
-    console.info("[loom] stills exported", await exportStills({ table, canvas, renderFrame }));
+  const footer = document.querySelector(".site-footer");
+  if (footer) {
+    new IntersectionObserver(
+      ([e]) => {
+        paused = !!e && e.intersectionRatio > 0.98;
+      },
+      { threshold: [0, 0.98, 1] }
+    ).observe(footer);
   }
+
+  const frame = (now: number) => {
+    const dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+    if (paused || document.hidden) return;
+    time = fixedTime ?? time + dt;
+    const u = uOverride ?? progress.update();
+    renderFrame(u, report.reducedMotion ? 0 : dt);
+    governor.sample(dt);
+  };
+
+  const renderFrame = (u: number, dt: number) => {
+    const day = T.daylight(u);
+    const studio = T.studio(u);
+    const explode = T.explode(u);
+    const graphK = T.graph(u);
+    const blackout = T.blackout(u);
+
+    // Scheme follows what the reader actually sees.
+    const scheme = day > 0.5 || (u > 5.9 && u < 7) ? "light" : "dark";
+    if (document.documentElement.dataset.scheme !== scheme) document.documentElement.dataset.scheme = scheme;
+    setChapter(progress.chapters[Math.min(progress.chapters.length - 1, Math.floor(u))]?.id ?? "open");
+
+    // Build clock
+    let tau: number;
+    if (u < 1) {
+      if (dt > 0 && !report.reducedMotion) ambientTau = Math.min(build.makespan * 0.42, ambientTau + dt * 0.22);
+      tau = ambientTau;
+    } else if (u < 3.05) {
+      tau = ambientTau;
+    } else {
+      const k = Math.min(1, Math.max(0, (u - 3.05) / (3.86 - 3.05)));
+      tau = ambientTau + (build.makespan - ambientTau) * k;
+    }
+
+    hall.setDaylight(day);
+    hall.setDusk(T.dusk(u));
+    hall.update(time);
+
+    const snap = build.update(tau, { lines: u < 1 ? 1 : T.lines(u) });
+    build.rollWheels();
+    build.group.visible = u < 4.95 || u > 5.9;
+    build.machines.visible = graphK < 0.05;
+
+    // Hero
+    hero.root.visible = u < 3.06;
+    hero.setExplode(explode);
+    const display = POSES.display;
+    hero.root.rotation.y = HERO.heading + studio * Math.sin(time * 0.12) * 0.06;
+    hero.setPose(display);
+    key.intensity = 9 * studio;
+    rim.intensity = 3.5 * studio;
+    fill.intensity = 0.35 * studio;
+    (studioFloor.material as THREE.MeshStandardMaterial).opacity = studio;
+    studioFloor.visible = studio > 0.01;
+
+    // Graph realm
+    graph.update(u, time, graphK);
+
+    // Environment and look
+    scene.environment = day > 0.4 || graphK > 0.5 ? envs.hall : envs.studio;
+    scene.environmentIntensity = day > 0.4 ? 0.85 : graphK > 0.5 ? 0.35 : 0.9 * studio + 0.1;
+    stage.setLook({ bloom: 0.18 + 0.55 * (1 - day), vignette: 0.28 + 0.25 * (1 - day), exposure: 1 });
+
+    // Camera
+    // Snap through the blackouts: the realm changes while the screen is dark.
+    director.update(u, blackout > 0.85 ? 0 : dt, camera, T.drift(u));
+
+    // Lunar realm swaps the whole scene while it is on screen.
+    if (u > 4.4) ensureLunar();
+    let target: THREE.Scene = scene;
+    if (lunar && u > 4.93 && u < 5.95) {
+      lunar.update(u, time, dt, camera, director.cut);
+      target = lunar.scene;
+    }
+
+    stage.render(target);
+    canvas.style.filter = blackout > 0.001 ? `brightness(${1 - blackout})` : "";
+
+    // Overlays
+    hud.update(snap, T.hud(u));
+    tags.update(explode > 0.85 && u > 2.3 && u < 2.8);
+    concepts.update(graphK > 0.9 && u < 4.9);
+    if (explode > 0.85 && dt > 0) {
+      raycaster.setFromCamera(pointer, camera);
+      const hit = raycaster.intersectObject(hero.root, true)[0];
+      let asm: THREE.Object3D | null = hit?.object ?? null;
+      while (asm && !asm.name.startsWith("asm_")) asm = asm.parent;
+      tags.hover(asm ? partOf(asm.name.slice(4)) : null);
+    }
+    if (graphK > 0.9 && dt > 0) {
+      raycaster.setFromCamera(pointer, camera);
+      concepts.hover(graph.pick(raycaster));
+    }
+  };
+
+  // First frame matches the poster; then fade the canvas in over it.
+  renderFrame(progress.update(), 0);
+  stageEl.toggleAttribute("data-live", true);
+  renderer.setAnimationLoop(frame);
 
   if (import.meta.env.DEV) {
-    const { captureComposite } = await import("../dev/capture");
-    (window as unknown as Record<string, unknown>).__loom = {
-      table,
-      scroll,
-      explore,
+    const { captureCanvas } = await import("../dev/capture");
+    const loom = {
+      stage,
+      progress,
       director,
-      camera: stage.camera,
-      beat: () => pos,
-      realm,
-      // Lets verification tooling drive frames when the host pane freezes rAF.
-      gsap,
-      capture: (name: string) => captureComposite(name, canvas),
+      build,
+      hero,
+      graph,
+      /** Render u with the camera settled, for captures. */
+      async shot(u: number, name: string, t = 0) {
+        uOverride = u;
+        fixedTime = t;
+        time = t;
+        director.cut = true;
+        renderFrame(u, 0);
+        director.cut = report.reducedMotion;
+        renderFrame(u, 0);
+        const out = await captureCanvas(name, canvas);
+        return out;
+      },
+      release() {
+        uOverride = null;
+        fixedTime = null;
+      },
+      async stills() {
+        const keys: [string, number][] = [
+          ["ch-open", 0],
+          ["ch-worker", 1.62],
+          ["ch-inside", 2.56],
+          ["ch-together", 3.62],
+          ["ch-plan", 4.5],
+          ["ch-beyond", 5.5],
+          ["ch-status", 6.3],
+        ];
+        ensureLunar();
+        while (!lunar) await new Promise((r) => setTimeout(r, 100));
+        for (const [name, u] of keys) {
+          uOverride = u;
+          fixedTime = 0;
+          time = 0;
+          director.cut = true;
+          renderFrame(u, 0);
+          await captureCanvas(name, canvas, { dir: "public/media/stills", quality: 0.88 });
+        }
+        director.cut = report.reducedMotion;
+        uOverride = null;
+        fixedTime = null;
+        return "stills written";
+      },
     };
+    (window as unknown as { __loom: typeof loom }).__loom = loom;
+    if (params.get("capture") === "stills") void loom.stills();
   }
-
-  /** One frame at a given beat position. Shared by the scroll-driven loop and
-   * the still exporter, so an exported still is the same frame the journey
-   * would draw and cannot drift from it. */
-  function renderFrame(at: BeatPosition, time: number, dt: number, settled: boolean) {
-    // Lets the phone layout special-case a beat — Act 1 is type over an empty
-    // void and wants the whole screen, not a stage band and an empty band.
-    if (stageEl && stageEl.dataset.beat !== at.beat.id) stageEl.dataset.beat = at.beat.id;
-    director.apply(at);
-    realm.update(at, time, dt);
-    perception.update(at, time, stage.camera);
-    const graphFade = realm.graph.fade;
-    // Thirteen chips is a thicket on a phone. Blocked nodes are the least
-    // informative of the four states, so they drop out first.
-    const narrow = canvas.clientWidth < 700;
-    const graphChips =
-      graphFade > 0.02
-        ? realm.graph
-            .chipData()
-            .filter((chip) => !(narrow && chip.state === "blocked"))
-            .map((chip) => {
-            const s = projectPoint(chip.world);
-            return {
-              id: chip.id,
-              x: s.x,
-              y: s.y,
-              visible: s.visible,
-              state: chip.state,
-              label: chip.label,
-              opacity: graphFade * (chip.state === "blocked" ? 0.45 : 1),
-            };
-          })
-        : undefined;
-    const boxes = perception.boxes(canvas.clientWidth, canvas.clientHeight);
-    overlays.update(at, {
-      settled,
-      exploring: explore.active,
-      touch: isTouch,
-      project,
-      graphChips,
-      feed: { alpha: perception.hudAlpha, boxes, lines: perception.hudLines() },
-    });
-    stage.render(dt);
-  }
-
-  const loop = (time: number, deltaMs: number) => {
-    pos = locate(table, scroll.state.progress);
-    // Scrollbar drags and programmatic jumps break the settle — leave explore.
-    if (explore.active && !scroll.state.settled) exitExplore();
-    explore.update();
-    renderFrame(pos, time, deltaMs / 1000, scroll.state.settled);
-  };
-  gsap.ticker.add(loop);
-
-  return {
-    destroy() {
-      gsap.ticker.remove(loop);
-      unbindKeys();
-      brandLink?.removeEventListener("click", onBrandClick);
-      canvas.removeEventListener("pointerdown", onPointerDown);
-      canvas.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", onPointerUp);
-      window.removeEventListener("wheel", onWheel);
-      scroll.destroy();
-      explore.dispose();
-      stage.dispose();
-    },
-  };
 }
 
-function mountAssemblyDebug(
-  stage: ReturnType<typeof createStage>,
-  assets: Awaited<ReturnType<typeof loadBrickAssets>>,
-  canvas: HTMLCanvasElement
-): JourneyHandle {
-  const car = new Structure(assets.data.car, assets.geometries);
-  car.setProgress(car.total);
-  const pyramid = new Structure(assets.data.pyramid, assets.geometries);
-  pyramid.setProgress(pyramid.total);
-  pyramid.group.position.set(0.35, 0, 0);
-  stage.scene.add(car.group, pyramid.group);
-  stage.scene.add(new THREE.AxesHelper(0.1));
-  const key = new THREE.DirectionalLight(0xcfe0f0, 2.6);
-  key.position.set(1.6, 2.4, 1.2);
-  stage.scene.add(key);
-
-  stage.camera.position.set(0.4, 0.35, 0.5);
-  const controls = new OrbitControls(stage.camera, canvas);
-  controls.target.set(0.1, 0.05, 0);
-
-  if (import.meta.env.DEV) {
-    (window as unknown as Record<string, unknown>).__loom = { camera: stage.camera, gsap, debug: "assembly" };
-  }
-
-  const loop = (_t: number, deltaMs: number) => {
-    controls.update();
-    stage.render(deltaMs / 1000);
-  };
-  gsap.ticker.add(loop);
-  return {
-    destroy() {
-      gsap.ticker.remove(loop);
-      controls.dispose();
-      stage.dispose();
-    },
-  };
-}
+export type { Stage };
