@@ -1,4 +1,4 @@
-# Loom Robotics website redesign (October 2026)
+# Necto Robotics website redesign (October 2026)
 
 This document records what was built for the redesign brief, why, and what is left. Source facts come from the LEGOSwarm vault: Development Roadmap, Worker Robot, VENTUNO Q, Mission & Hypotheses, Events & Protocol and the WEAVE white paper.
 
@@ -20,7 +20,7 @@ This document records what was built for the redesign brief, why, and what is le
 **Identity**
 - Strictly monochrome: black, white, graphite, silver.
 - State is shown by weight, pattern and motion, never by hue: a filled dot is done, a half dot in progress, an outline next or concept.
-- The supplied basket-weave mark (`images/loom-mark.svg`) appears in the nav, the footer and in relief on both flanks of the robot. No new symbols were invented.
+- The supplied basket-weave mark (`images/necto-mark.svg`) appears in the nav, the footer and in relief on both flanks of the robot. No new symbols were invented.
 
 **Light and dark.** The site is mostly light. Dark chapters are the same room with the daylight taken away, not a different page:
 - The hall's baked daylight dims to black.

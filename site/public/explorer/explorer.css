@@ -1,5 +1,5 @@
 /*
-	Loom Robotics — Architecture Explorer styles
+	Necto Robotics — Architecture Explorer styles
 	Loaded only on architecture.html (+ the homepage mini-graph bits, which are
 	scoped under .arch-mini and safe to ship anywhere). Reuses brand tokens from
 	brand.css; keeps the aerospace/engineering-dashboard tone — no neon.

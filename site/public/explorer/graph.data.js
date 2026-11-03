@@ -1,5 +1,5 @@
 /*
-	Loom Robotics — Architecture graph data (SINGLE SOURCE OF TRUTH)
+	Necto Robotics — Architecture graph data (SINGLE SOURCE OF TRUTH)
 
 	This is the entire content of the Interactive Architecture Explorer. Edit
 	HERE to change the graph — add/rename layers or subsystems, rewrite copy,
@@ -22,7 +22,7 @@
 	Anything marked DRAFT below is placeholder copy to be replaced with real
 	technical write-ups. Structure and wiring are final; words are not.
 */
-window.LOOM_GRAPH = {
+window.NECTO_GRAPH = {
 
 	// --- Layers (parent nodes). `flowOrder` drives the vertical command flow. ---
 	layers: [

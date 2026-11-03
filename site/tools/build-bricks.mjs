@@ -1,5 +1,5 @@
 /** Builds public/media/bricks.glb from the LDraw-derived OBJs in
- * assets-src/bricks/ (verbatim copies of loom-datasets mesh_cache).
+ * assets-src/bricks/ (verbatim copies of necto-datasets mesh_cache).
  *
  * The OBJs are z-up meters with the origin at the top of the brick body
  * (LDraw convention); we bake the three.js y-up mapping (x, z, -y) and emit

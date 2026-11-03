@@ -1,4 +1,4 @@
-"""Builds the Loom worker robot from nothing and exports it as glTF.
+"""Builds the Necto worker robot from nothing and exports it as glTF.
 
     blender -b -P build_worker.py -- <out.glb> [high|low]
 
@@ -81,7 +81,7 @@ if HI:
         z = 0.1092
         lib.cylinder(f"fastener_{sx}_{sy}", 0.0034, 0.0012, loc=(sx, sy, z + 0.0004),
                      mat=M["steel"], parent=shell_grp, verts=24, bevel=0.0004, segs=1)
-    # The Loom mark, in graphite relief on both flanks.
+    # The Necto mark, in graphite relief on both flanks.
     for side in (1, -1):
         mk = lib.mark_mesh(f"mark_{'L' if side > 0 else 'R'}", 0.024, 0.0006, M["shell_dark"],
                            parent=shell_grp)

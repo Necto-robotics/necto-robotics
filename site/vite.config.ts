@@ -29,7 +29,7 @@ const MIME: Record<string, string> = {
 // assembled dist.
 function serveLegacyAssets(): Plugin {
   return {
-    name: "loom-serve-legacy-assets",
+    name: "necto-serve-legacy-assets",
     apply: "serve",
     configureServer(server) {
       // Dev-only verification endpoint: the page POSTs base64 frames here so
@@ -80,7 +80,7 @@ function serveLegacyAssets(): Plugin {
           }
           fontCssCache = out;
         } catch (err) {
-          console.warn("[loom] font proxy failed", err);
+          console.warn("[necto] font proxy failed", err);
           fontCssCache = "";
         }
         res.end(fontCssCache);
@@ -105,7 +105,7 @@ function serveLegacyAssets(): Plugin {
 function includePartials(): Plugin {
   const dir = resolve(import.meta.dirname, "partials");
   return {
-    name: "loom-include-partials",
+    name: "necto-include-partials",
     transformIndexHtml: {
       order: "pre",
       handler(html, ctx) {

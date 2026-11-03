@@ -14,7 +14,7 @@ void initFeed();
 const report = detectTier();
 document.documentElement.dataset.tier = report.tier;
 const toStatic = (why: unknown) => {
-  if (why) console.warn("[loom] static journey:", why);
+  if (why) console.warn("[necto] static journey:", why);
   document.documentElement.classList.add("static");
 };
 

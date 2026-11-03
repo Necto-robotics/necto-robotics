@@ -6,7 +6,7 @@ actually produced (part id + confidence, after the inventory/confidence/
 geometry gates). Nothing here is invented for the website.
 
 Unlike the other bakers this one is Python: the source frames live in the
-loom-datasets tree and Pillow is already the toolchain there. Outputs are
+necto-datasets tree and Pillow is already the toolchain there. Outputs are
 committed, so a normal `npm run build` never needs it.
 
     python tools/build-feed.py
@@ -22,7 +22,7 @@ import sys
 
 from PIL import Image
 
-DATASETS = pathlib.Path(r"D:/Robotics/LEGOSwarm/loom-datasets")
+DATASETS = pathlib.Path(r"D:/Robotics/LEGOSwarm/necto-datasets")
 CAPTURE = "3c7d4e33"
 FRAME = "frame_0004"
 OUT_W, OUT_H = 1280, 720

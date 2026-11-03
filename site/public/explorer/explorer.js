@@ -1,9 +1,9 @@
 /*
-	Loom Robotics — Architecture Explorer
+	Necto Robotics — Architecture Explorer
 
 	Our interface around the graph. Cytoscape.js (vendored, pinned 3.30.2) is a
 	dependency behind this file — it is never used directly by a page. Content
-	comes entirely from assets/js/graph.data.js (window.LOOM_GRAPH); this file
+	comes entirely from assets/js/graph.data.js (window.NECTO_GRAPH); this file
 	only knows how to *render and interact*, not what the nodes are.
 
 	Expected DOM (provided by architecture.html):
@@ -18,7 +18,7 @@
 (function () {
 	"use strict";
 
-	var G = window.LOOM_GRAPH;
+	var G = window.NECTO_GRAPH;
 	var mount = document.getElementById("arch-explorer");
 	if (!mount || !G || typeof cytoscape === "undefined") { return; }
 
@@ -324,5 +324,5 @@
 	var rT; window.addEventListener("resize", function () { clearTimeout(rT); rT = setTimeout(applyResponsive, 200); });
 
 	// expose a tiny handle for debugging/extension (our interface, not Cytoscape's)
-	window.LoomExplorer = { cy: cy, fit: fitAll, isolate: function (id) { isolated = null; renderLegend(); } };
+	window.NectoExplorer = { cy: cy, fit: fitAll, isolate: function (id) { isolated = null; renderLegend(); } };
 })();

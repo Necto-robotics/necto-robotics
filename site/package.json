@@ -1,9 +1,9 @@
 {
-  "name": "loom-journey",
+  "name": "necto-journey",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Immersive scroll-driven journey for loom-robotics.com (builds to /next/ until cutover)",
+  "description": "Immersive scroll-driven journey for nectorobotics.com (builds to /next/ until cutover)",
   "scripts": {
     "dev": "vite",
     "typecheck": "tsc --noEmit",

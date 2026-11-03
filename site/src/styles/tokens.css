@@ -1,4 +1,4 @@
-/* Loom Robotics design tokens. Strictly monochrome: state is carried by
+/* Necto Robotics design tokens. Strictly monochrome: state is carried by
    weight, pattern and motion, never by hue. Shared by every page. */
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/inter-tight";

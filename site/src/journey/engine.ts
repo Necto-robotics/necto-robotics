@@ -131,7 +131,7 @@ export async function mountJourney(report: TierReport): Promise<void> {
       .then(async (m) => {
         lunar = await m.createLunar({ robotTemplate: (fleetGltf ?? workerGltf).scene, tier, renderer });
       })
-      .catch((e) => console.warn("[loom] lunar realm unavailable", e));
+      .catch((e) => console.warn("[necto] lunar realm unavailable", e));
   };
 
   const progress = new Progress();
@@ -299,7 +299,7 @@ export async function mountJourney(report: TierReport): Promise<void> {
 
   if (import.meta.env.DEV) {
     const { captureCanvas } = await import("../dev/capture");
-    const loom = {
+    const necto = {
       stage,
       progress,
       director,
@@ -359,8 +359,8 @@ export async function mountJourney(report: TierReport): Promise<void> {
         return "stills written";
       },
     };
-    (window as unknown as { __loom: typeof loom }).__loom = loom;
-    if (params.get("capture") === "stills") void loom.stills();
+    (window as unknown as { __necto: typeof necto }).__necto = necto;
+    if (params.get("capture") === "stills") void necto.stills();
   }
 }
 

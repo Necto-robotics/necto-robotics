@@ -1,4 +1,4 @@
-You must navigate to [LEGOSwarm](https://github.com/LoomRobotics/LEGOSwarm) to find the open source code repository.
+You must navigate to [LEGOSwarm](https://github.com/Necto-robotics/LEGOSwarm) to find the open source code repository.
 
 ## Credits
 

@@ -1,4 +1,4 @@
-"""Shared helpers for the scripted Loom assets.
+"""Shared helpers for the scripted Necto assets.
 
 Everything here builds geometry from nothing: no external .blend is ever
 opened. Units are metres, Blender Z-up, robot +X forward. The glTF exporter
@@ -246,7 +246,7 @@ def mesh_tris(objs):
 
 # ---------------------------------------------------------------- brand mark
 
-# The supplied Loom mark (images/loom-mark.svg), as geometry: four woven bars
+# The supplied Necto mark (images/necto-mark.svg), as geometry: four woven bars
 # split at their crossings, two ring terminals and six dot terminals. Units are
 # the SVG's 4172 x 4092 viewBox; callers scale.
 MARK_BARS = [((1250, 542), (1250, 1280)), ((1250, 1716), (1250, 3820)),

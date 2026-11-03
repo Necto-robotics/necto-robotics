@@ -28,7 +28,7 @@ mkdirSync(out, { recursive: true });
 
 cpSync(join(repo, "CNAME"), join(out, "CNAME"));
 mkdirSync(join(out, "images"), { recursive: true });
-for (const f of ["favicon.svg", "og-cover.jpg", "loom-mark.svg"]) {
+for (const f of ["favicon.svg", "og-cover.jpg", "necto-mark.svg"]) {
   cpSync(join(repo, "images", f), join(out, "images", f));
 }
 
@@ -36,13 +36,13 @@ const redirect = (to) => `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Loom Robotics</title>
-    <link rel="canonical" href="https://loom-robotics.com${to}" />
+    <title>Necto Robotics</title>
+    <link rel="canonical" href="https://nectorobotics.com${to}" />
     <meta name="robots" content="noindex" />
     <meta http-equiv="refresh" content="0; url=${to}" />
   </head>
   <body>
-    <p><a href="${to}">Continue to Loom Robotics</a>.</p>
+    <p><a href="${to}">Continue to Necto Robotics</a>.</p>
   </body>
 </html>
 `;
