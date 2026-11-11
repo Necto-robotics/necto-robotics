@@ -749,83 +749,6 @@ html:not(.js) .chapter-index {
   }
 }
 
-/* ---------------------------------------------------------------------
-   Viewport chrome: corner brackets, a ruler along the top edge and one
-   mono readout, so the stage reads as an instrument, not a backdrop. */
-.reticle {
-  position: absolute;
-  inset: calc(var(--nav-h) + 0.75rem) var(--gutter) var(--gutter);
-  color: var(--fg);
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
-  opacity: 0;
-  transition: opacity 0.6s var(--ease-out);
-}
-.reticle[data-on] {
-  opacity: 1;
-}
-.reticle__c {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border: 0 solid var(--rule-strong);
-}
-.reticle__c[data-c="tl"] { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
-.reticle__c[data-c="tr"] { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
-.reticle__c[data-c="bl"] { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
-.reticle__c[data-c="br"] { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
-.reticle__ruler {
-  position: absolute;
-  top: 0;
-  left: 2rem;
-  right: 2rem;
-  height: 6px;
-  background:
-    repeating-linear-gradient(90deg, var(--rule-strong) 0 1px, transparent 1px calc(100% / 70)) left top / 100% 3px no-repeat,
-    repeating-linear-gradient(90deg, var(--rule-strong) 0 1px, transparent 1px calc(100% / 14)) left top / 100% 6px no-repeat;
-  opacity: 0.8;
-}
-.reticle__ruler b {
-  position: absolute;
-  top: -3px;
-  left: calc(var(--k, 0) * 100%);
-  width: 1px;
-  height: 12px;
-  background: var(--accent);
-  box-shadow: 0 0 0 1px rgba(var(--scrim), 0.6);
-}
-.reticle__ruler b::after {
-  content: "";
-  position: absolute;
-  left: -2px;
-  bottom: -4px;
-  width: 5px;
-  height: 5px;
-  background: var(--accent);
-  transform: rotate(45deg);
-}
-.reticle__read {
-  position: absolute;
-  right: 1.25rem;
-  top: 0.9rem;
-  display: flex;
-  gap: 1.6rem;
-  margin: 0;
-  color: var(--muted);
-}
-.reticle__read span:first-child {
-  color: var(--fg);
-}
-.reticle__read span:last-child {
-  color: var(--accent);
-}
-.reticle__read span:empty {
-  display: none;
-}
-
 /* Weighted scrolling (Lenis drives the wheel; everything else is native). */
 html.lenis,
 html.lenis-smooth {
@@ -1092,13 +1015,10 @@ html.static .steps::after {
 }
 
 @media (max-width: 63.99rem) {
-  .reticle__read {
-    display: none;
-  }
   .figures dl {
     grid-template-columns: repeat(2, 1fr);
   }
-  /* No measure line here: the bar takes the readout's corner under the nav. */
+  /* No measure line here: the bar sits under the nav instead. */
   .view-controls {
     left: auto;
     right: var(--gutter);
@@ -1110,12 +1030,6 @@ html.static .steps::after {
   }
 }
 @media (max-width: 47.99rem) {
-  .reticle {
-    inset: 0.75rem;
-  }
-  .reticle__ruler {
-    display: none;
-  }
   .view-controls {
     top: calc(56svh - 3.2rem);
   }

@@ -1,7 +1,7 @@
 /* Necto Robotics design tokens. Monochrome, plus one accent that is reserved
-   for active states and live telemetry: focus rings, the current chapter,
-   the live readouts. It never carries meaning alone (pattern still does), so
-   setting --accent to a grey restores the strictly monochrome site. */
+   for active states: focus rings and the live row of the replay log. It never
+   carries meaning alone (pattern still does), so setting --accent to a grey
+   restores the strictly monochrome site. */
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/inter-tight";
 @import "@fontsource/ibm-plex-mono/400.css";

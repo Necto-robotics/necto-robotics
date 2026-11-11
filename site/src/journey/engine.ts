@@ -18,9 +18,7 @@ import { initChapterIndex } from "../ui/chapter-index";
 import { Hud } from "../ui/hud";
 import { PartTags } from "../ui/part-tags";
 import { ConceptTags } from "../ui/concept-tags";
-import { Telemetry } from "../ui/telemetry";
 import { getLogDrawer } from "../ui/drawer";
-import { setNavProgress, setNavWhere } from "../ui/nav";
 
 /** Story timeline: every visual parameter is a function of u.
  * Light/dark turns sit inside u in [i - 0.08, i + 0.08] (progress.TURN),
@@ -154,15 +152,10 @@ export async function mountJourney(report: TierReport): Promise<void> {
   const hud = new Hud(ui);
   const tags = new PartTags(ui, hero, camera);
   const concepts = new ConceptTags(ui, graph, camera);
-  const telemetry = new Telemetry(ui);
   const logDrawer = getLogDrawer();
   const governor = new Governor(stage);
   const controls = document.querySelector<HTMLElement>("[data-view-controls]");
   const orbit = new Orbit(stageEl, controls);
-  const titles = new Map<string, string>();
-  document.querySelectorAll<HTMLAnchorElement>(".chapter-index a").forEach((a) => {
-    titles.set(a.hash.slice(1), (a.textContent ?? "").replace(/^\s*\d+\s*/, "").trim());
-  });
 
   // Weighted wheel scrolling: the wheel feeds a damped velocity instead of
   // jumping the page, so the stage moves with mass. Touch, keyboard,
@@ -239,11 +232,11 @@ export async function mountJourney(report: TierReport): Promise<void> {
         requestAnimationFrame(() => stageEl.setAttribute("data-live", ""));
       }
     }
-    renderFrame(u, report.reducedMotion ? 0 : dt, now);
+    renderFrame(u, report.reducedMotion ? 0 : dt);
     governor.sample(dt);
   };
 
-  const renderFrame = (u: number, dt: number, now = performance.now()) => {
+  const renderFrame = (u: number, dt: number) => {
     const day = T.daylight(u);
     const studio = T.studio(u);
     const explode = T.explode(u);
@@ -257,9 +250,6 @@ export async function mountJourney(report: TierReport): Promise<void> {
     const scheme = day > 0.5 ? "light" : "dark";
     if (document.documentElement.dataset.scheme !== scheme) document.documentElement.dataset.scheme = scheme;
     setChapter(chapter?.id ?? "open");
-    setNavProgress(u / (total - 0.001));
-    if (index > 0) setNavWhere(`${String(index).padStart(2, "0")} / ${String(total - 1).padStart(2, "0")}`, titles.get(chapter!.id) ?? "");
-    else setNavWhere("", "");
 
     // Build clock
     let tau: number;
@@ -330,19 +320,6 @@ export async function mountJourney(report: TierReport): Promise<void> {
     logDrawer.mark(tau);
     tags.update(explode > 0.85 && u > 2.3 && u < 2.8);
     concepts.update(graphK > 0.9 && u < 4.9);
-    telemetry.update(
-      {
-        index,
-        total,
-        title: titles.get(chapter?.id ?? "") ?? "",
-        fov: camera.fov,
-        ortho: director.ortho,
-        frameMs: dt > 0 ? governor.frameMs : 0,
-        k: u / (total - 0.001),
-        on: u > 0.45 && blackout < 0.5,
-      },
-      now
-    );
     const picking = dt > 0 && !orbit.active;
     if (explode > 0.85 && picking) {
       raycaster.setFromCamera(pointer, camera);

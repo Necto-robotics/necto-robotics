@@ -1,15 +1,8 @@
-/** Shared header: the mobile menu, the "where am I" readout, the reading
- * progress hairline, and page prefetch for instant transitions. */
-let where: HTMLElement | null = null;
-let progress: HTMLElement | null = null;
-let lastWhere = "";
-let lastK = -1;
+/** Shared header: the mobile menu and page prefetch for instant transitions. */
 
 export function initNav(): void {
   const nav = document.querySelector<HTMLElement>("[data-nav]");
   const toggle = document.querySelector<HTMLButtonElement>("[data-nav-toggle]");
-  where = document.querySelector<HTMLElement>("[data-nav-where]");
-  progress = document.querySelector<HTMLElement>(".site-nav__progress");
   if (!nav || !toggle) return;
   requestAnimationFrame(() => requestAnimationFrame(() => nav.toggleAttribute("data-ready", true)));
   const set = (open: boolean) => {
@@ -62,30 +55,4 @@ function prefetchPages(nav: HTMLElement) {
   const all = () => nav.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((a) => warm(a.href));
   if (idle) idle(all, { timeout: 4000 });
   else setTimeout(all, 2500);
-}
-
-/** "03 / 06 · Building together" or "3.2 · Topological data flow". */
-export function setNavWhere(index: string, title: string): void {
-  if (!where) return;
-  const key = `${index}|${title}`;
-  if (key === lastWhere) return;
-  lastWhere = key;
-  if (!title) {
-    where.removeAttribute("data-on");
-    return;
-  }
-  where.replaceChildren();
-  const b = document.createElement("b");
-  b.textContent = index;
-  where.append(b, ` ${title}`);
-  where.setAttribute("data-on", "");
-}
-
-/** 0..1 along the page or the journey. */
-export function setNavProgress(k: number): void {
-  if (!progress) return;
-  const q = Math.round(Math.min(1, Math.max(0, k)) * 400) / 400;
-  if (q === lastK) return;
-  lastK = q;
-  progress.style.setProperty("--progress", String(q));
 }
