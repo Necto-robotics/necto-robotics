@@ -54,7 +54,15 @@
           <img src="/media/stills/poster.jpg" alt="" width="1920" height="1080" />
         </picture>
         <canvas class="stage__canvas"></canvas>
-        <div class="stage__ui"></div>
+        <div class="stage__ui">
+          <div class="reticle">
+            <i class="reticle__c" data-c="tl"></i><i class="reticle__c" data-c="tr"></i><i class="reticle__c" data-c="bl"></i><i class="reticle__c" data-c="br"></i>
+            <span class="reticle__ruler"><b data-tele="mark"></b></span>
+            <p class="reticle__read">
+              <span data-tele="chapter">00 · Open</span><span data-tele="proj">Perspective</span><span data-tele="fov">FOV 40°</span><span data-tele="frame"></span>
+            </p>
+          </div>
+        </div>
       </div>
 
       <nav class="chapter-index" aria-label="Chapters" data-away>
@@ -68,6 +76,15 @@
           <li><a href="#status"><span>06</span> Where it stands</a></li>
         </ol>
       </nav>
+
+      <div class="view-controls" data-view-controls hidden>
+        <span class="view-controls__hint" aria-hidden="true">Drag to orbit</span>
+        <button type="button" data-orbit="left" aria-label="Orbit left"><svg class="arrow" aria-hidden="true"><use href="#arrow" /></svg></button>
+        <button type="button" data-orbit="right" aria-label="Orbit right"><svg class="arrow" aria-hidden="true"><use href="#arrow" /></svg></button>
+        <button type="button" data-orbit="in" aria-label="Zoom in">+</button>
+        <button type="button" data-orbit="out" aria-label="Zoom out">&minus;</button>
+        <button type="button" data-orbit="reset" aria-label="Reset view">Reset</button>
+      </div>
 
       <section class="chapter chapter--open" id="open" data-chapter="open" data-scheme="light" aria-labelledby="open-title">
         <div class="chapter__copy">
@@ -87,6 +104,7 @@
             <a class="btn" href="#worker">See how it works</a>
           </div>
           <p class="chip" data-kind="viz">Visualization</p>
+          <a class="scroll-cue" href="#worker"><span>Scroll</span><i aria-hidden="true"></i></a>
         </div>
         <figure class="still"><picture><source srcset="/media/stills/ch-open.avif" type="image/avif" /><img src="/media/stills/ch-open.jpg" alt="A wide daylit concrete hall; small white robots work on a stone plinth at its centre." loading="lazy" width="1920" height="1080" /></picture></figure>
       </section>
@@ -115,49 +133,49 @@
           <p>Taken apart, the worker is a short list of clear responsibilities. Select one to see what it does.</p>
           <ul class="parts" data-parts>
             <li>
-              <button type="button" data-part="drive" aria-describedby="part-drive">
+              <button type="button" data-part="drive" aria-controls="part-drive" aria-describedby="part-drive">
                 <span class="parts__name">Drive modules</span><span class="parts__tag">In bring-up</span>
               </button>
               <p id="part-drive">Two geared motors with encoders turn the wheels. The base gets the robot close; the arm does the rest.</p>
             </li>
             <li>
-              <button type="button" data-part="compute" aria-describedby="part-compute">
+              <button type="button" data-part="compute" aria-controls="part-compute" aria-describedby="part-compute">
                 <span class="parts__name">Onboard AI compute</span><span class="parts__tag">In bring-up</span>
               </button>
               <p id="part-compute">An octa-core Linux processor with an NPU of up to 40 TOPS runs perception, planning and the swarm. A real-time microcontroller owns the wheels and the safe state.</p>
             </li>
             <li>
-              <button type="button" data-part="camera" aria-describedby="part-camera">
+              <button type="button" data-part="camera" aria-controls="part-camera" aria-describedby="part-camera">
                 <span class="parts__name">RGB-D camera</span><span class="parts__tag">Proposed</span>
               </button>
               <p id="part-camera">Colour plus depth. It finds parts, guides the grasp and checks each placement.</p>
             </li>
             <li>
-              <button type="button" data-part="arm" aria-describedby="part-arm">
+              <button type="button" data-part="arm" aria-controls="part-arm" aria-describedby="part-arm">
                 <span class="parts__name">Arm</span><span class="parts__tag">Undecided</span>
               </button>
               <p id="part-arm">An articulated arm for local positioning and controlled insertion. Its actuators are still being chosen.</p>
             </li>
             <li>
-              <button type="button" data-part="gripper" aria-describedby="part-gripper">
+              <button type="button" data-part="gripper" aria-controls="part-gripper" aria-describedby="part-gripper">
                 <span class="parts__name">Gripper</span><span class="parts__tag">Proposed</span>
               </button>
               <p id="part-gripper">Compliant and force-limited, so a brick seats firmly without pushing the robot back.</p>
             </li>
             <li>
-              <button type="button" data-part="power" aria-describedby="part-power">
+              <button type="button" data-part="power" aria-controls="part-power" aria-describedby="part-power">
                 <span class="parts__name">Power</span><span class="parts__tag">Proposed</span>
               </button>
               <p id="part-power">One battery behind a main fuse. The main switch is the hard stop.</p>
             </li>
             <li>
-              <button type="button" data-part="status" aria-describedby="part-status">
+              <button type="button" data-part="status" aria-controls="part-status" aria-describedby="part-status">
                 <span class="parts__name">Status lights</span><span class="parts__tag">Proposed</span>
               </button>
               <p id="part-status">Show the robot's state to people nearby. They display; they never decide.</p>
             </li>
             <li>
-              <button type="button" data-part="chassis" aria-describedby="part-chassis">
+              <button type="button" data-part="chassis" aria-controls="part-chassis" aria-describedby="part-chassis">
                 <span class="parts__name">Chassis</span><span class="parts__tag">Proposed</span>
               </button>
               <p id="part-chassis">A low, stiff frame that keeps the battery and electronics close to the floor.</p>
@@ -179,16 +197,26 @@
             Every worker carries a copy of the same plan, the Assembly Graph. Each brick is a job. A job becomes
             available only when the bricks beneath it are complete.
           </p>
-          <ol class="steps">
+          <ol class="steps" data-reveal>
             <li><strong>Claim.</strong> A free robot claims an available job and tells its peers. Ties resolve the same way on every robot.</li>
             <li><strong>Build.</strong> It fetches the part, drives in and places it.</li>
             <li><strong>Verify.</strong> It checks the placement against the plan before calling it complete.</li>
             <li><strong>Continue.</strong> Completion unlocks the jobs that depend on it.</li>
           </ol>
+          <div class="figures" data-reveal>
+            <svg class="rule-draw" viewBox="0 0 100 2" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="1" x2="100" y2="1" pathLength="1" data-draw /></svg>
+            <dl>
+              <div><dt>Jobs</dt><dd data-count="61">61</dd></div>
+              <div><dt>Waves</dt><dd data-count="8">8</dd></div>
+              <div><dt>Robots</dt><dd data-count="6">6</dd></div>
+              <div><dt>Messages per job</dt><dd>&asymp;<span data-count="2">2</span></dd></div>
+            </dl>
+          </div>
           <p>
             About two messages per job. No polling, no scheduler. If a robot stops mid-job, its claim expires and a
             peer takes over. In simulation, builds still complete after losing a third of the robots.
           </p>
+          <p class="disclose"><button class="btn btn--ghost" type="button" data-drawer-open="log">Open the replay log <svg class="arrow" aria-hidden="true"><use href="#arrow" /></svg></button></p>
           <p class="chip" data-kind="viz">Visualization · real 61-brick assembly graph</p>
         </div>
         <figure class="still"><picture><source srcset="/media/stills/ch-together.avif" type="image/avif" /><img src="/media/stills/ch-together.jpg" alt="Six robots around a half-built LEGO model; thin lines link each robot to the brick it has claimed." loading="lazy" width="1920" height="1080" /></picture></figure>
@@ -248,7 +276,7 @@
           <p class="label"><span class="idx">06</span> Where it stands</p>
           <h2 id="status-title">Proven in simulation. Built to go much further.</h2>
         </div>
-        <div class="status">
+        <div class="status" data-reveal>
           <article>
             <h3><span class="status__mark" data-state="done"></span>Complete</h3>
             <ul>
@@ -266,7 +294,7 @@
             </ul>
           </article>
         </div>
-        <div class="cards">
+        <div class="cards" data-reveal>
           <a class="card card--primary" href="/technical.html">
             <span class="label">White paper</span>
             <strong>WEAVE: the Workload Execution and Autonomous Verification Engine</strong>
@@ -288,6 +316,34 @@
         </div>
         <figure class="still"><picture><source srcset="/media/stills/ch-status.avif" type="image/avif" /><img src="/media/stills/ch-status.jpg" alt="The hall at dusk; the finished LEGO model on the plinth with the robots parked around it." loading="lazy" width="1920" height="1080" /></picture></figure>
       </section>
+
+      <dialog class="drawer" id="drawer-log" aria-labelledby="drawer-log-title" data-lenis-prevent>
+        <div class="drawer__head">
+          <div>
+            <p class="label">Replay · event log</p>
+            <h2 id="drawer-log-title">Every message on the wire</h2>
+          </div>
+          <button class="drawer__close" type="button" data-drawer-close aria-label="Close">&times;</button>
+        </div>
+        <div class="drawer__body">
+          <p>
+            Chapter 03 replays this tape: the real 61-brick car graph, six workers, one of which goes silent mid-build.
+            Each row is one event. The claims and completions are the only messages the robots exchange.
+          </p>
+          <dl class="drawer__facts">
+            <div><dt>Jobs</dt><dd>61</dd></div>
+            <div><dt>Edges</dt><dd>101</dd></div>
+            <div><dt>Waves</dt><dd>8</dd></div>
+            <div><dt>Workers</dt><dd>6</dd></div>
+            <div><dt>On the wire</dt><dd data-log-count>&middot;</dd></div>
+            <div><dt>Tape</dt><dd>24.5<small>s</small></dd></div>
+          </dl>
+          <table>
+            <thead><tr><th>t</th><th>Event</th><th>Job</th><th>Worker</th><th>Clock</th></tr></thead>
+            <tbody data-log><tr><td colspan="5">Loading the tape…</td></tr></tbody>
+          </table>
+        </div>
+      </dialog>
     </main>
 
     <!--#include footer -->

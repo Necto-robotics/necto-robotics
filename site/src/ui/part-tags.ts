@@ -52,7 +52,7 @@ export class PartTags {
     document.querySelectorAll<HTMLButtonElement>("[data-parts] button[data-part]").forEach((b) => {
       const part = b.dataset.part!;
       this.buttons.set(part, b);
-      b.setAttribute("aria-pressed", "false");
+      b.setAttribute("aria-expanded", "false");
       b.addEventListener("click", () => {
         this.pinned = this.pinned === part ? null : part;
         this.sync();
@@ -82,7 +82,7 @@ export class PartTags {
   private sync() {
     const active = this.active();
     for (const [p, b] of this.buttons) {
-      b.setAttribute("aria-pressed", String(p === this.pinned));
+      b.setAttribute("aria-expanded", String(p === this.pinned));
       b.closest("li")?.toggleAttribute("data-hot", p === active);
     }
     for (const [p, t] of this.tags) t.toggleAttribute("data-hot", p === active);

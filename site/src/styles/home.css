@@ -748,3 +748,375 @@ html:not(.js) .chapter-index {
     padding: 3.5rem var(--gutter) 3rem;
   }
 }
+
+/* ---------------------------------------------------------------------
+   Viewport chrome: corner brackets, a ruler along the top edge and one
+   mono readout, so the stage reads as an instrument, not a backdrop. */
+.reticle {
+  position: absolute;
+  inset: calc(var(--nav-h) + 0.75rem) var(--gutter) var(--gutter);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease-out);
+}
+.reticle[data-on] {
+  opacity: 1;
+}
+.reticle__c {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 0 solid var(--rule-strong);
+}
+.reticle__c[data-c="tl"] { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+.reticle__c[data-c="tr"] { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
+.reticle__c[data-c="bl"] { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
+.reticle__c[data-c="br"] { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+.reticle__ruler {
+  position: absolute;
+  top: 0;
+  left: 2rem;
+  right: 2rem;
+  height: 6px;
+  background:
+    repeating-linear-gradient(90deg, var(--rule-strong) 0 1px, transparent 1px calc(100% / 70)) left top / 100% 3px no-repeat,
+    repeating-linear-gradient(90deg, var(--rule-strong) 0 1px, transparent 1px calc(100% / 14)) left top / 100% 6px no-repeat;
+  opacity: 0.8;
+}
+.reticle__ruler b {
+  position: absolute;
+  top: -3px;
+  left: calc(var(--k, 0) * 100%);
+  width: 1px;
+  height: 12px;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px rgba(var(--scrim), 0.6);
+}
+.reticle__ruler b::after {
+  content: "";
+  position: absolute;
+  left: -2px;
+  bottom: -4px;
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  transform: rotate(45deg);
+}
+.reticle__read {
+  position: absolute;
+  right: 1.25rem;
+  top: 0.9rem;
+  display: flex;
+  gap: 1.6rem;
+  margin: 0;
+  color: var(--muted);
+}
+.reticle__read span:first-child {
+  color: var(--fg);
+}
+.reticle__read span:last-child {
+  color: var(--accent);
+}
+.reticle__read span:empty {
+  display: none;
+}
+
+/* Weighted scrolling (Lenis drives the wheel; everything else is native). */
+html.lenis,
+html.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* The stage is a thing you can take hold of where the story allows it. */
+.stage[data-orbit] {
+  cursor: grab;
+}
+.stage[data-dragging] {
+  cursor: grabbing;
+}
+.stage[data-dragging] .stage__ui {
+  pointer-events: none;
+}
+
+/* Orbit controls: the button equivalents of dragging on the stage. */
+/* It sits on the measure line, just clear of the copy column. */
+.view-controls {
+  position: fixed;
+  left: calc(var(--gutter) + var(--measure) + 1.5rem);
+  bottom: var(--gutter);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--fg);
+  transition: opacity 0.4s var(--ease-out), transform 0.5s var(--ease-out), visibility 0s;
+}
+.view-controls[hidden] {
+  display: flex;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.3s var(--ease-out), transform 0.3s var(--ease-out), visibility 0s 0.3s;
+}
+.view-controls__hint {
+  padding: 0 0.9rem 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.view-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.4rem;
+  height: 2.4rem;
+  padding: 0 0.6rem;
+  border: 0;
+  border-left: 1px solid var(--rule);
+  background: none;
+  color: inherit;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color var(--t-base) var(--ease-out),
+    color var(--t-base) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+.view-controls button:hover {
+  background: var(--fg);
+  color: var(--bg);
+  transition-duration: 0s, 0s, var(--t-fast);
+}
+.view-controls button:active {
+  transform: scale(0.96);
+}
+.view-controls button:focus-visible {
+  outline-offset: -2px;
+  z-index: 1;
+}
+.view-controls .arrow {
+  width: 1rem;
+  height: 1rem;
+}
+.view-controls [data-orbit="left"] .arrow {
+  transform: scaleX(-1);
+}
+@media (pointer: coarse) {
+  .view-controls__hint {
+    display: none;
+  }
+}
+
+/* Scroll cue: a hairline that keeps falling until the reader does. */
+.scroll-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 2.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+}
+.scroll-cue i {
+  position: relative;
+  width: 1px;
+  height: 2.6rem;
+  background: var(--rule-strong);
+  overflow: hidden;
+}
+.scroll-cue i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--fg);
+  transform-origin: top;
+  animation: cue 2.2s var(--ease-in-out) infinite;
+}
+@keyframes cue {
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  45% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  55% {
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+}
+.scroll-cue:hover {
+  color: var(--fg);
+}
+html.static .scroll-cue,
+html:not(.js) .scroll-cue {
+  display: none;
+}
+
+/* Progressive disclosure: a part describes itself only while it is selected,
+   hovered or focused. Without JS every description is visible. */
+:root {
+  interpolate-size: allow-keywords;
+}
+.js:not(.static) .parts li p {
+  overflow: hidden;
+  margin: 0;
+  height: 0;
+  opacity: 0;
+  transition: height 0.45s var(--ease-out), opacity 0.35s var(--ease-out), margin 0.45s var(--ease-out);
+}
+.js:not(.static) .parts li[data-hot] p,
+.js:not(.static) .parts li:has(button[aria-expanded="true"]) p {
+  height: auto;
+  opacity: 1;
+  margin: -0.2rem 0 0.8rem;
+}
+.parts button,
+.concepts button {
+  transition: color var(--t-fast) var(--ease-out);
+}
+.parts button::after {
+  content: "";
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: 0.2rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  transition: background-color var(--t-fast);
+}
+.parts li[data-hot] button::after,
+.parts button[aria-expanded="true"]::after {
+  background: currentColor;
+}
+.parts li[data-hot] button,
+.concepts li[data-hot] button {
+  color: var(--fg);
+}
+
+/* Drawn lines and live figures (chapter 03). */
+.steps {
+  position: relative;
+}
+.steps::after {
+  content: "";
+  position: absolute;
+  left: 0.55rem;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--rule-strong);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 1.6s var(--ease-out) 0.2s;
+}
+.steps[data-in]::after {
+  transform: scaleY(1);
+}
+html:not(.js) .steps::after,
+html.static .steps::after {
+  transform: none;
+}
+.steps li::before {
+  background: var(--bg);
+  padding-right: 0.3rem;
+}
+.figures {
+  margin: 0 0 1.75rem;
+}
+.rule-draw {
+  width: 100%;
+  height: 2px;
+  overflow: visible;
+}
+.rule-draw line {
+  stroke: var(--fg);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.figures dl {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin: 1rem 0 0;
+}
+.figures dt {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.figures dd {
+  margin: 0.2rem 0 0;
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.chapter .disclose {
+  margin: 0 0 0.5rem;
+}
+
+@media (max-width: 63.99rem) {
+  .reticle__read {
+    display: none;
+  }
+  .figures dl {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  /* No measure line here: the bar takes the readout's corner under the nav. */
+  .view-controls {
+    left: auto;
+    right: var(--gutter);
+    bottom: auto;
+    top: calc(var(--nav-h) + 1rem);
+  }
+  .view-controls__hint {
+    display: none;
+  }
+}
+@media (max-width: 47.99rem) {
+  .reticle {
+    inset: 0.75rem;
+  }
+  .reticle__ruler {
+    display: none;
+  }
+  .view-controls {
+    top: calc(56svh - 3.2rem);
+  }
+}

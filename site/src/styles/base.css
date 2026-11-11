@@ -1,4 +1,5 @@
-/* Shared foundation: reset, typography, navigation, footer, buttons. */
+/* Shared foundation: reset, typography, navigation, footer, buttons,
+   drawers, construction lines and the few cross-page motion rules. */
 *,
 *::before,
 *::after {
@@ -20,7 +21,7 @@ body {
   font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.6s var(--ease), color 0.6s var(--ease);
+  transition: background-color var(--t-slow) var(--ease), color var(--t-slow) var(--ease);
 }
 
 img,
@@ -37,9 +38,15 @@ a {
   text-decoration-thickness: 1px;
 }
 
+/* Focus: one crisp accent ring everywhere, drawn outside the element so it
+   never shifts layout. */
 :focus-visible {
-  outline: 2px solid var(--fg);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
+  border-radius: 1px;
+}
+::selection {
+  background: rgba(var(--accent-rgb), 0.22);
 }
 
 h1,
@@ -87,9 +94,14 @@ p {
   transform: none;
 }
 
-/* Mono label: eyebrows, chips, telemetry */
-.label {
+/* Mono label: eyebrows, chips, telemetry. Numbers are always tabular. */
+.label,
+.chip,
+.mono {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.label {
   font-size: 0.72rem;
   font-weight: 500;
   letter-spacing: 0.12em;
@@ -104,7 +116,6 @@ p {
   padding: 0.28em 0.6em 0.26em;
   border: 1px solid var(--rule-strong);
   border-radius: var(--radius);
-  font-family: var(--font-mono);
   font-size: 0.66rem;
   font-weight: 500;
   letter-spacing: 0.12em;
@@ -127,7 +138,8 @@ p {
   border-radius: 0;
 }
 
-/* Buttons */
+/* Buttons. Hover is instant; the release eases. Pressing compresses the
+   button a hair, like a real switch. */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -144,11 +156,19 @@ p {
   color: var(--fg);
   background: transparent;
   cursor: pointer;
-  transition: background-color 0.25s var(--ease), color 0.25s var(--ease);
+  transition:
+    background-color var(--t-base) var(--ease-out),
+    color var(--t-base) var(--ease-out),
+    border-color var(--t-base) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
 }
 .btn:hover {
   background: var(--fg);
   color: var(--bg);
+  transition-duration: 0s, 0s, 0s, var(--t-fast);
+}
+.btn:active {
+  transform: scale(0.98);
 }
 .btn--solid {
   background: var(--fg);
@@ -158,10 +178,16 @@ p {
   background: transparent;
   color: var(--fg);
 }
+.btn--ghost {
+  border-color: var(--rule-strong);
+}
+.btn--ghost:hover {
+  border-color: var(--fg);
+}
 .btn .arrow {
   width: 1.1em;
   height: 1.1em;
-  transition: transform 0.25s var(--ease);
+  transition: transform var(--t-base) var(--ease-out);
 }
 .btn:hover .arrow {
   transform: translateX(3px);
@@ -179,7 +205,7 @@ p {
   gap: 1rem;
   padding: 0 var(--gutter);
   color: var(--fg);
-  transition: color 0.6s var(--ease), background-color 0.4s var(--ease);
+  transition: color var(--t-slow) var(--ease), background-color 0.4s var(--ease);
 }
 .site-nav::after {
   content: "";
@@ -202,6 +228,44 @@ p {
 .site-nav__brand .mark {
   width: 1.65rem;
   height: auto;
+  view-transition-name: brand-mark;
+}
+/* Where the reader is (chapter or section), set by the page script. */
+.site-nav__where {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  margin: 0;
+  padding-left: clamp(1rem, 4vw, 3rem);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-out);
+}
+.site-nav__where[data-on] {
+  opacity: 1;
+}
+.site-nav__where b {
+  font-weight: 500;
+  color: var(--fg);
+}
+.site-nav__where::before {
+  content: "";
+  width: 1.5rem;
+  height: 1px;
+  background: var(--rule-strong);
+  flex: none;
+}
+.site-nav__menu {
+  display: contents;
 }
 .site-nav__links {
   display: flex;
@@ -213,28 +277,72 @@ p {
   font-size: 0.88rem;
 }
 .site-nav__links a {
+  position: relative;
+  display: inline-block;
+  padding: 0.3rem 0;
   text-decoration: none;
   opacity: 0.78;
-  transition: opacity 0.2s;
+  transition: opacity var(--t-fast);
+}
+.site-nav__links a:not(.site-nav__cta)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--t-base) var(--ease-out);
 }
 .site-nav__links a:hover,
 .site-nav__links a[aria-current="page"] {
   opacity: 1;
 }
-.site-nav__links a[aria-current="page"] {
-  text-decoration: underline;
+.site-nav__links a:hover::after,
+.site-nav__links a[aria-current="page"]::after {
+  transform: scaleX(1);
+  transform-origin: left;
 }
 .site-nav__cta {
   border: 1px solid var(--rule-strong);
-  padding: 0.45rem 0.8rem;
+  padding: 0.45rem 0.8rem !important;
   border-radius: var(--radius);
   opacity: 1 !important;
+  transition:
+    background-color var(--t-base) var(--ease-out),
+    color var(--t-base) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+.site-nav__cta:hover {
+  background: var(--fg);
+  color: var(--bg);
+  transition-duration: 0s, 0s, var(--t-fast);
+}
+.site-nav__cta:active {
+  transform: scale(0.98);
+}
+/* Reading progress: one hairline of accent along the bottom of the bar. */
+.site-nav__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left;
+  pointer-events: none;
 }
 .site-nav__toggle {
   display: none;
 }
 
 @media (max-width: 47.99rem) {
+  .site-nav__where {
+    display: none;
+  }
   .site-nav__toggle {
     display: inline-flex;
     align-items: center;
@@ -291,15 +399,234 @@ p {
     border-bottom: 1px solid var(--rule);
     opacity: 1;
   }
+  .site-nav__links a::after {
+    display: none;
+  }
   .site-nav__cta {
     border: 0;
-    padding: 0.85rem 0;
+    padding: 0.85rem 0 !important;
   }
   .site-nav[data-open] .site-nav__links {
     transform: none;
     visibility: visible;
     transition: transform 0.35s var(--ease);
   }
+}
+
+/* Construction lines: the copy measure and the right gutter, exposed as
+   hairlines, so every page sits on the same visible frame. */
+.gridlines {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.gridlines::before,
+.gridlines::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--grid);
+}
+.gridlines::before {
+  left: calc(var(--gutter) + var(--measure));
+}
+.gridlines::after {
+  right: var(--gutter);
+}
+.gridlines i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--grid);
+}
+.gridlines i:first-child {
+  top: var(--nav-h);
+}
+.gridlines i:last-child {
+  bottom: var(--gutter);
+}
+@media (max-width: 63.99rem) {
+  .gridlines {
+    display: none;
+  }
+}
+
+/* Drawer: a native dialog that slides in from the right and holds the raw
+   material (telemetry, logs) that the copy only summarises. */
+.drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(30rem, 100vw);
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--rule-strong);
+  background: var(--bg);
+  color: var(--fg);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  transform: translateX(100%);
+  opacity: 0;
+  overscroll-behavior: contain;
+  transition:
+    transform 0.5s var(--ease-out),
+    opacity 0.3s var(--ease-out),
+    overlay 0.5s allow-discrete,
+    display 0.5s allow-discrete;
+}
+.drawer:not([open]) {
+  display: none;
+}
+.drawer[open] {
+  transform: none;
+  opacity: 1;
+}
+@starting-style {
+  .drawer[open] {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+.drawer::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  opacity: 0;
+  transition:
+    opacity 0.4s var(--ease-out),
+    overlay 0.4s allow-discrete,
+    display 0.4s allow-discrete;
+}
+.drawer[open]::backdrop {
+  opacity: 1;
+}
+@starting-style {
+  .drawer[open]::backdrop {
+    opacity: 0;
+  }
+}
+.drawer__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem var(--gutter) 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+.drawer__head h2 {
+  font-size: var(--step-1);
+  font-weight: 400;
+  margin: 0.2rem 0 0;
+}
+.drawer__close {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--t-base) var(--ease-out),
+    color var(--t-base) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+.drawer__close:hover {
+  background: var(--fg);
+  color: var(--bg);
+  transition-duration: 0s, 0s, var(--t-fast);
+}
+.drawer__close:active {
+  transform: scale(0.96);
+}
+.drawer__body {
+  overflow: auto;
+  padding: 1rem var(--gutter) 2rem;
+  scrollbar-width: thin;
+}
+.drawer__facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin: 0 0 1.5rem;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.drawer__facts > div {
+  padding: 0.75rem 0.85rem;
+  background: var(--bg);
+}
+.drawer__facts dt {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.drawer__facts dd {
+  margin: 0.2rem 0 0;
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.drawer__facts dd small {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-left: 0.3rem;
+}
+.drawer table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.drawer th,
+.drawer td {
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+.drawer th {
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.6rem;
+  position: sticky;
+  top: -1rem;
+  background: var(--bg);
+}
+.drawer td:first-child {
+  color: var(--muted);
+}
+.drawer tr[data-kind="fault"] td {
+  color: var(--fg);
+  font-weight: 500;
+}
+.drawer tr[data-now] td {
+  color: var(--accent);
+}
+.drawer p {
+  color: var(--fg-2);
+  font-size: 0.92rem;
 }
 
 /* Footer */
@@ -371,6 +698,42 @@ p {
   }
 }
 
+/* Page transitions: a short cross-dissolve between the three pages, with
+   the brand mark carried across. Progressive: browsers without the API
+   navigate as usual. */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.32s;
+  animation-timing-function: var(--ease-out);
+}
+::view-transition-group(brand-mark) {
+  animation-duration: 0.32s;
+}
+
+/* Reveal on enter: copy rises a few pixels into place; drawn lines (SVG
+   with pathLength="1") draw in. Both wait for [data-in], set by ui/reveal. */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.7s var(--ease-out), transform 0.9s var(--ease-out);
+}
+.js [data-reveal][data-in] {
+  opacity: 1;
+  transform: none;
+}
+.js [data-draw] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1.4s var(--ease-out);
+}
+.js [data-in] [data-draw],
+.js [data-draw][data-in] {
+  stroke-dashoffset: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -378,5 +741,17 @@ p {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+  .js [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+  .js [data-draw] {
+    stroke-dashoffset: 0;
   }
 }

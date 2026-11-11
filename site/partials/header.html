@@ -19,13 +19,24 @@
     <svg class="mark" aria-hidden="true" focusable="false"><use href="#necto-mark" /></svg>
     <span>Necto Robotics</span>
   </a>
+  <p class="site-nav__where" data-nav-where></p>
   <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="site-links" data-nav-toggle>
     <span></span><span class="visually-hidden">Menu</span>
   </button>
-  <ul class="site-nav__links" id="site-links">
-    <li><a href="/#worker" data-page="index">The robot</a></li>
-    <li><a href="/#plan" data-page="index-plan">How it works</a></li>
-    <li><a href="/devlog.html" data-page="devlog">Dev log</a></li>
-    <li><a class="site-nav__cta" href="/technical.html" data-page="technical">White paper</a></li>
-  </ul>
+  <nav class="site-nav__menu" aria-label="Primary">
+    <ul class="site-nav__links" id="site-links">
+      <li><a href="/#worker" data-page="index">The robot</a></li>
+      <li><a href="/#plan" data-page="index-plan">How it works</a></li>
+      <li><a href="/devlog.html" data-page="devlog">Dev log</a></li>
+      <li><a class="site-nav__cta" href="/technical.html" data-page="technical">White paper</a></li>
+    </ul>
+  </nav>
+  <span class="site-nav__progress" aria-hidden="true"></span>
 </header>
+<div class="gridlines" aria-hidden="true"><i></i><i></i></div>
+<script type="speculationrules">
+  {
+    "prerender": [{ "where": { "href_matches": ["/technical.html", "/devlog.html"] }, "eagerness": "moderate" }],
+    "prefetch": [{ "where": { "href_matches": "/" }, "eagerness": "moderate" }]
+  }
+</script>

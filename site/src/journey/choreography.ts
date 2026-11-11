@@ -7,7 +7,11 @@ export const HERO = { pos: [-1.18, 0, 0.72] as [number, number, number], heading
 
 /** The one continuous shot. u = chapter index + progress through it.
  * Chapter 05 keys are in the lunar realm's own coordinates; the cut to and
- * from it happens inside a blackout. */
+ * from it happens inside a blackout.
+ *
+ * `ortho` drains the perspective for the two schematic chapters: the
+ * exploded worker (02) is shown almost flat, like an assembly drawing; the
+ * graph (04) keeps a little depth so its rings still stack. */
 export const CAMERA_KEYS: CamKey[] = [
   // 00 Open: the hall, wide; robots small at the plinth.
   { u: 0.0, pos: [-4.4, 1.2, 3.7], look: [0.4, 0.55, -0.9], fov: 40 },
@@ -16,18 +20,18 @@ export const CAMERA_KEYS: CamKey[] = [
   { u: 1.0, pos: [-2.15, 0.78, 2.7], look: [-1.1, 0.3, 0.6], fov: 30 },
   { u: 1.5, pos: [-0.62, 0.48, 1.62], look: [-1.18, 0.3, 0.7], fov: 28 },
   { u: 1.85, pos: [-0.9, 0.4, 1.78], look: [-1.18, 0.3, 0.72], fov: 28 },
-  // 02 Inside: pull back and up to frame the exploded stack.
-  { u: 2.2, pos: [-0.42, 0.62, 1.8], look: [-1.18, 0.36, 0.72], fov: 32 },
-  { u: 2.55, pos: [-0.3, 0.74, 1.95], look: [-1.15, 0.42, 0.72], fov: 34 },
-  { u: 2.85, pos: [-0.5, 0.62, 1.9], look: [-1.18, 0.32, 0.72], fov: 30 },
+  // 02 Inside: pull back and up to frame the exploded stack, perspective gone.
+  { u: 2.2, pos: [-0.42, 0.62, 1.8], look: [-1.18, 0.36, 0.72], fov: 32, ortho: 0.9 },
+  { u: 2.55, pos: [-0.3, 0.74, 1.95], look: [-1.15, 0.42, 0.72], fov: 34, ortho: 0.9 },
+  { u: 2.85, pos: [-0.5, 0.62, 1.9], look: [-1.18, 0.32, 0.72], fov: 30, ortho: 0.9 },
   // 03 Building together: back into daylight, around the model.
   { u: 3.1, pos: [1.25, 0.78, 1.55], look: [0, 0.2, 0], fov: 32 },
   { u: 3.45, pos: [0.62, 0.98, 0.92], look: [0, 0.17, 0], fov: 30 },
   { u: 3.8, pos: [-0.7, 0.9, 0.85], look: [0, 0.17, 0], fov: 30 },
   // 04 The shared plan: rise with the bricks into the graph.
-  { u: 4.1, pos: [0.35, 1.1, 4.3], look: [0, 1.15, 0], fov: 36 },
-  { u: 4.5, pos: [1.7, 1.4, 4.0], look: [0, 1.2, 0], fov: 36 },
-  { u: 4.85, pos: [2.8, 2.1, 2.6], look: [0, 1.15, 0], fov: 36 },
+  { u: 4.1, pos: [0.35, 1.1, 4.3], look: [0, 1.15, 0], fov: 36, ortho: 0.55 },
+  { u: 4.5, pos: [1.7, 1.4, 4.0], look: [0, 1.2, 0], fov: 36, ortho: 0.55 },
+  { u: 4.85, pos: [2.8, 2.1, 2.6], look: [0, 1.15, 0], fov: 36, ortho: 0.55 },
   // 05 Beyond the arena (lunar realm coordinates).
   { u: 4.96, pos: [-26, 7.5, 34], look: [0, 1.5, 0], fov: 30 },
   { u: 5.5, pos: [-17, 4.2, 22], look: [0, 1.2, 0], fov: 30 },

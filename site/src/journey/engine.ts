@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import Lenis from "lenis";
 import type { TierReport } from "../perf/tier";
 import { createStage, type Stage } from "./stage";
 import { createEnvironments } from "./env";
@@ -6,6 +7,7 @@ import { Progress } from "./progress";
 import { Director, curve } from "./director";
 import { CAMERA_KEYS, HERO } from "./choreography";
 import { Governor } from "./governor";
+import { Orbit } from "./orbit";
 import { loadGLB } from "../scene/assets";
 import { loadBrickAssets } from "../scene/bricks";
 import { createHall } from "../scene/hall";
@@ -16,6 +18,9 @@ import { initChapterIndex } from "../ui/chapter-index";
 import { Hud } from "../ui/hud";
 import { PartTags } from "../ui/part-tags";
 import { ConceptTags } from "../ui/concept-tags";
+import { Telemetry } from "../ui/telemetry";
+import { getLogDrawer } from "../ui/drawer";
+import { setNavProgress, setNavWhere } from "../ui/nav";
 
 /** Story timeline: every visual parameter is a function of u.
  * Light/dark turns sit inside u in [i - 0.08, i + 0.08] (progress.TURN),
@@ -30,6 +35,14 @@ const T = {
   blackout: curve([[4.84, 0], [4.95, 1], [5.05, 0], [5.92, 0], [5.97, 1], [6.01, 1], [6.08, 0]]),
   hud: (u: number) => (u > 3.1 && u < 3.9 ? 1 : 0),
   drift: curve([[0, 1], [0.6, 0.4], [1.4, 0.6], [2.0, 0], [3.0, 0], [6.2, 0.6]]),
+  /** Where the reader may take the camera: the dwell shots, never a turn. */
+  orbit: curve([
+    [1.15, 0], [1.5, 1], [2.85, 1], [3.0, 0],
+    [3.12, 0], [3.3, 1], [3.8, 1], [3.92, 0],
+    [4.3, 0], [4.45, 1], [4.86, 1], [4.95, 0],
+    [5.15, 0], [5.35, 1], [5.8, 1], [5.94, 0],
+    [6.05, 0], [6.2, 1],
+  ]),
 };
 
 export async function mountJourney(report: TierReport): Promise<void> {
@@ -141,7 +154,28 @@ export async function mountJourney(report: TierReport): Promise<void> {
   const hud = new Hud(ui);
   const tags = new PartTags(ui, hero, camera);
   const concepts = new ConceptTags(ui, graph, camera);
+  const telemetry = new Telemetry(ui);
+  const logDrawer = getLogDrawer();
   const governor = new Governor(stage);
+  const controls = document.querySelector<HTMLElement>("[data-view-controls]");
+  const orbit = new Orbit(stageEl, controls);
+  const titles = new Map<string, string>();
+  document.querySelectorAll<HTMLAnchorElement>(".chapter-index a").forEach((a) => {
+    titles.set(a.hash.slice(1), (a.textContent ?? "").replace(/^\s*\d+\s*/, "").trim());
+  });
+
+  // Weighted wheel scrolling: the wheel feeds a damped velocity instead of
+  // jumping the page, so the stage moves with mass. Touch, keyboard,
+  // scrollbar and anchors stay native; reduced motion and ?scroll=native
+  // switch it off entirely.
+  const lenis =
+    !report.reducedMotion && matchMedia("(pointer: fine)").matches && params.get("scroll") !== "native"
+      ? new Lenis({ autoRaf: false, lerp: 0.085, smoothWheel: true, syncTouch: false, anchors: true })
+      : null;
+  document.addEventListener("drawer:toggle", (e) => {
+    if ((e as CustomEvent<boolean>).detail) lenis?.stop();
+    else lenis?.start();
+  });
 
   // Desktop leaves the left third for copy; phones split screen instead.
   const applyLayout = () => {
@@ -176,6 +210,7 @@ export async function mountJourney(report: TierReport): Promise<void> {
   let time = 0;
   let fixedTime: number | null = null;
   let lastChapter = -1;
+  let orbitOn = false;
 
   const footer = document.querySelector(".site-footer");
   if (footer) {
@@ -188,6 +223,7 @@ export async function mountJourney(report: TierReport): Promise<void> {
   }
 
   const frame = (now: number) => {
+    lenis?.raf(now);
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
     if (paused || document.hidden) return;
@@ -203,21 +239,27 @@ export async function mountJourney(report: TierReport): Promise<void> {
         requestAnimationFrame(() => stageEl.setAttribute("data-live", ""));
       }
     }
-    renderFrame(u, report.reducedMotion ? 0 : dt);
+    renderFrame(u, report.reducedMotion ? 0 : dt, now);
     governor.sample(dt);
   };
 
-  const renderFrame = (u: number, dt: number) => {
+  const renderFrame = (u: number, dt: number, now = performance.now()) => {
     const day = T.daylight(u);
     const studio = T.studio(u);
     const explode = T.explode(u);
     const graphK = T.graph(u);
     const blackout = T.blackout(u);
+    const total = progress.chapters.length;
+    const index = Math.min(total - 1, Math.floor(u));
+    const chapter = progress.chapters[index];
 
     // Scheme follows what the reader actually sees.
     const scheme = day > 0.5 ? "light" : "dark";
     if (document.documentElement.dataset.scheme !== scheme) document.documentElement.dataset.scheme = scheme;
-    setChapter(progress.chapters[Math.min(progress.chapters.length - 1, Math.floor(u))]?.id ?? "open");
+    setChapter(chapter?.id ?? "open");
+    setNavProgress(u / (total - 0.001));
+    if (index > 0) setNavWhere(`${String(index).padStart(2, "0")} / ${String(total - 1).padStart(2, "0")}`, titles.get(chapter!.id) ?? "");
+    else setNavWhere("", "");
 
     // Build clock
     let tau: number;
@@ -260,9 +302,17 @@ export async function mountJourney(report: TierReport): Promise<void> {
     scene.environmentIntensity = day > 0.4 ? 0.85 : graphK > 0.5 ? 0.35 : 0.9 * studio + 0.1;
     stage.setLook({ bloom: 0.18 + 0.55 * (1 - day), vignette: 0.28 + 0.25 * (1 - day), exposure: 1 });
 
-    // Camera
+    // Camera: the authored shot, then whatever the reader has turned it by.
     // Snap through the blackouts: the realm changes while the screen is dark.
-    director.update(u, blackout > 0.85 ? 0 : dt, camera, T.drift(u));
+    const allow = uOverride !== null ? 0 : T.orbit(u);
+    orbit.update(dt, allow);
+    const on = allow > 0.5;
+    if (on !== orbitOn) {
+      orbitOn = on;
+      if (controls) controls.hidden = !on;
+      stageEl.toggleAttribute("data-orbit", on);
+    }
+    director.update(u, blackout > 0.85 ? 0 : dt, camera, T.drift(u), orbit.offset, allow);
 
     // Lunar realm swaps the whole scene while it is on screen.
     if (u > 4.4) ensureLunar();
@@ -277,16 +327,31 @@ export async function mountJourney(report: TierReport): Promise<void> {
 
     // Overlays
     hud.update(snap, T.hud(u));
+    logDrawer.mark(tau);
     tags.update(explode > 0.85 && u > 2.3 && u < 2.8);
     concepts.update(graphK > 0.9 && u < 4.9);
-    if (explode > 0.85 && dt > 0) {
+    telemetry.update(
+      {
+        index,
+        total,
+        title: titles.get(chapter?.id ?? "") ?? "",
+        fov: camera.fov,
+        ortho: director.ortho,
+        frameMs: dt > 0 ? governor.frameMs : 0,
+        k: u / (total - 0.001),
+        on: u > 0.45 && blackout < 0.5,
+      },
+      now
+    );
+    const picking = dt > 0 && !orbit.active;
+    if (explode > 0.85 && picking) {
       raycaster.setFromCamera(pointer, camera);
       const hit = raycaster.intersectObject(hero.root, true)[0];
       let asm: THREE.Object3D | null = hit?.object ?? null;
       while (asm && !asm.name.startsWith("asm_")) asm = asm.parent;
       tags.hover(asm ? partOf(asm.name.slice(4)) : null);
     }
-    if (graphK > 0.9 && dt > 0) {
+    if (graphK > 0.9 && picking) {
       raycaster.setFromCamera(pointer, camera);
       concepts.hover(graph.pick(raycaster));
     }
@@ -306,6 +371,8 @@ export async function mountJourney(report: TierReport): Promise<void> {
       build,
       hero,
       graph,
+      orbit,
+      lenis,
       /** Render u with the camera settled, for captures. */
       async shot(u: number, name: string, t = 0) {
         uOverride = u;

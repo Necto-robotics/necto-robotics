@@ -1,5 +1,7 @@
-/* Necto Robotics design tokens. Strictly monochrome: state is carried by
-   weight, pattern and motion, never by hue. Shared by every page. */
+/* Necto Robotics design tokens. Monochrome, plus one accent that is reserved
+   for active states and live telemetry: focus rings, the current chapter,
+   the live readouts. It never carries meaning alone (pattern still does), so
+   setting --accent to a grey restores the strictly monochrome site. */
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/inter-tight";
 @import "@fontsource/ibm-plex-mono/400.css";
@@ -29,7 +31,19 @@
   --gutter: clamp(1rem, 0.6rem + 2vw, 2.5rem);
   --measure: 34rem;
   --radius: 2px;
+
+  /* Motion. Every curve here lands like a damped mass: fast out of the
+     gate, long settle, no bounce. --ease is the general-purpose one. */
   --ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --t-fast: 120ms;
+  --t-base: 260ms;
+  --t-slow: 600ms;
+
+  /* Exposed construction lines: 1px at a few percent. */
+  --grid-alpha: 0.07;
 
   --nav-h: 3.75rem;
 }
@@ -44,8 +58,11 @@
   --muted: #55595e;
   --rule: rgba(10, 11, 12, 0.14);
   --rule-strong: rgba(10, 11, 12, 0.32);
+  --grid: rgba(10, 11, 12, var(--grid-alpha));
   --surface: rgba(255, 255, 255, 0.72);
   --scrim: 242, 242, 240;
+  --accent: #1a4fd6;
+  --accent-rgb: 26, 79, 214;
   color-scheme: light;
 }
 
@@ -56,7 +73,10 @@
   --muted: #8f949a;
   --rule: rgba(236, 238, 240, 0.14);
   --rule-strong: rgba(236, 238, 240, 0.34);
+  --grid: rgba(236, 238, 240, var(--grid-alpha));
   --surface: rgba(16, 17, 19, 0.72);
   --scrim: 6, 6, 7;
+  --accent: #5d8dff;
+  --accent-rgb: 93, 141, 255;
   color-scheme: dark;
 }

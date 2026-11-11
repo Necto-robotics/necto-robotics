@@ -5,11 +5,17 @@ import { detectTier } from "./perf/tier";
 import { initNav } from "./ui/nav";
 import { initChapterIndex } from "./ui/chapter-index";
 import { initFeed } from "./ui/feed";
+import { initDrawers, getLogDrawer } from "./ui/drawer";
+import { initReveal } from "./ui/reveal";
 
 /** Boot: the page is complete HTML before this runs. If the device can run
  * the 3D stage it loads lazily as its own chunk; otherwise every chapter
- * shows its still and nothing else changes. */
+ * shows its still and nothing else changes. Drawers, reveals and the replay
+ * log work on both paths. */
 initNav();
+initDrawers();
+getLogDrawer();
+initReveal();
 void initFeed();
 const report = detectTier();
 document.documentElement.dataset.tier = report.tier;

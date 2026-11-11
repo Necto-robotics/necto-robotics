@@ -249,6 +249,12 @@
   }
 }
 
+/* Reading pages keep the frame but not the measure line, which would cut
+   through the body column. */
+.page-paper .gridlines::before {
+  display: none;
+}
+
 /* Reading pages get a solid bar: text scrolls beneath it, never through it. */
 .page-paper .site-nav::after {
   background: rgba(var(--scrim), 0.96);

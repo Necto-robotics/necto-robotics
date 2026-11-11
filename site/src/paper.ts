@@ -1,12 +1,15 @@
 import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/paper.css";
-import { initNav } from "./ui/nav";
+import { initNav, setNavProgress, setNavWhere } from "./ui/nav";
+import { initReveal } from "./ui/reveal";
 
 /** Reading pages (white paper, dev log): navigation, a scroll-spy for the
- * contents column, and the architecture explorer booted only when it is
- * about to scroll into view (its graph library is ~370 KB). */
+ * contents column that also feeds the header readout, reading progress, and
+ * the architecture explorer booted only when it is about to scroll into view
+ * (its graph library is ~370 KB). */
 initNav();
+initReveal();
 
 const toc = document.querySelector<HTMLElement>(".paper-toc");
 if (toc) {
@@ -27,6 +30,10 @@ if (toc) {
       li.querySelector(":scope > a")?.classList.add("active");
       li = li.parentElement?.closest("li");
     }
+    // "3.2 · Topological data flow" splits into index and title.
+    const [idx, ...rest] = (link.textContent ?? "").split("·").map((s) => s.trim());
+    if (rest.length) setNavWhere(idx ?? "", rest.join(" · "));
+    else setNavWhere("§", idx ?? "");
   };
   const update = () => {
     let cur = items[0]?.a;
@@ -43,6 +50,15 @@ if (toc) {
   addEventListener("scroll", update, { passive: true });
   update();
 }
+
+// Reading progress along the whole page.
+const onScroll = () => {
+  const max = document.documentElement.scrollHeight - innerHeight;
+  setNavProgress(max > 0 ? scrollY / max : 0);
+};
+addEventListener("scroll", onScroll, { passive: true });
+addEventListener("resize", onScroll);
+onScroll();
 
 const mount = document.getElementById("arch-explorer");
 if (mount) {
