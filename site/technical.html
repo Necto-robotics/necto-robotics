@@ -4,14 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>WEAVE white paper · Necto Robotics</title>
-    <meta name="description" content="WEAVE, the Workload Execution and Autonomous Verification Engine: an event-sourced, lease-based architecture for robot swarms that coordinate through sparse, low-bandwidth messages." />
+    <meta name="description" content="WEAVE, the Workload Execution and Autonomous Verification Engine: an event-sourced, lease-based architecture for robot swarms that coordinate through sparse, event-driven messages." />
     <link rel="canonical" href="https://nectorobotics.com/technical.html" />
     <link rel="icon" href="/images/favicon.svg" type="image/svg+xml" />
     <meta name="theme-color" content="#f2f2f0" />
     <meta property="og:type" content="article" />
     <meta property="og:site_name" content="Necto Robotics" />
     <meta property="og:title" content="WEAVE white paper · Necto Robotics" />
-    <meta property="og:description" content="An event-sourced, lease-based architecture for robot swarms that coordinate through sparse, low-bandwidth messages." />
+    <meta property="og:description" content="An event-sourced, lease-based architecture for robot swarms that coordinate through sparse, event-driven messages." />
     <meta property="og:image" content="https://nectorobotics.com/images/og-cover.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
@@ -22,7 +22,7 @@
         <p class="label">White paper · Draft, living document</p>
         <h1>WEAVE</h1>
         <p class="paper-hero__title">Workload Execution and Autonomous Verification Engine</p>
-        <p class="lead">A fault-tolerant robotic swarm orchestration system that enables function through sparse and low-bandwidth data transmissions.</p>
+        <p class="lead">A fault-tolerant robotic swarm orchestration system that coordinates through sparse, event-driven messages.</p>
       </header>
       <div class="paper-layout">
         <aside class="paper-toc">
@@ -124,7 +124,7 @@
 
       <section id="abstract" class="paper-section">
       <h2>Abstract</h2>
-      <p>Traditional multi-agent construction swarms rely heavily on continuous, high-bandwidth global state synchronization or centralized task arbiters, which suffer from communication bottlenecks, network contention, and single-point-of-failure vulnerabilities in degraded environments. We introduce <strong>WEAVE</strong>, a fault-tolerant system architecture that enables sparse, low-bandwidth transmissions to robot swarms. The LEGOSwarm research platform employs this decentralized, event-sourced coordination architecture that decouples structural intent from robotic execution by splitting the system state into a declarative, directed Assembly Graph (the read model) and an immutable, append-only Event Log (the write model). Rather than exchanging heavy 3D spatial representations or monolithic graphs, individual agents coordinate asynchronously by emitting and replaying lightweight, transactional graph-mutation events. By formulating physical assembly as a continuous, local state-reconciliation loop, we establish a lock-free, lease-based task reservation table that ensures eventual consistency across partitioned networks. Furthermore, we incorporate a distributed &ldquo;Build &rarr; Verify &rarr; Continue&rdquo; pipeline using directed constraints to enforce multi-agent verification boundaries, preventing structural error propagation. Simulation benchmarks demonstrate that the proposed architecture significantly minimizes communication bandwidth, scales linearly with the swarm population, and maintains structural integrity under severe wireless latency and agent attrition.</p>
+      <p>Traditional multi-agent construction swarms rely heavily on continuous, high-bandwidth global state synchronization or centralized task arbiters, which suffer from communication bottlenecks, network contention, and single-point-of-failure vulnerabilities in degraded environments. We introduce <strong>WEAVE</strong>, a fault-tolerant system architecture for robot swarms that coordinate through sparse, event-driven messages. Our research platform employs this decentralized, event-sourced coordination architecture that decouples structural intent from robotic execution by splitting the system state into a declarative, directed Assembly Graph (the read model) and an immutable, append-only Event Log (the write model). Rather than exchanging heavy 3D spatial representations or monolithic graphs, individual agents coordinate asynchronously by emitting and replaying lightweight, transactional graph-mutation events. By formulating physical assembly as a continuous, local state-reconciliation loop, we establish a lock-free, lease-based task reservation table that ensures eventual consistency across partitioned networks. Furthermore, we incorporate a distributed &ldquo;Build &rarr; Verify &rarr; Continue&rdquo; pipeline using directed constraints to enforce multi-agent verification boundaries, preventing structural error propagation. In simulation, every build completed after the loss of up to a third of the robots, and throughput rose from one robot to two before levelling off at a shared placement area. The swarm sent fewer messages than a scripted centralized baseline, at a higher byte cost dominated by replicating the plan to every robot.</p>
       </section>
 
       <section id="introduction" class="paper-section">
@@ -142,7 +142,7 @@
 
       <div id="sec-1-3" class="paper-subsection">
       <h3>1.3 &middot; The WEAVE approach</h3>
-      <p>To resolve these limitations, we present <strong>WEAVE</strong>: a novel system architecture that transposes the enterprise software design principles of Event Sourcing (ES) and Command Query Responsibility Segregation (CQRS) to physical, spatial 3D robotic assembly. The LEGOSwarm research project operates on WEAVE, proving that individual robots do not directly mutate or synchronize global project states. Instead, the absolute source of truth is maintained as an immutable, append-only ledger of discrete transition events (the write model). Each autonomous robot in the swarm maintains a local copy of this event stream, which it processes asynchronously to reconstruct and update a local projection of the global Assembly Graph (the read model). In this framework, the physical progress of the construction site is modeled as a continuous feedback loop designed to systematically minimize the spatial and structural error vector e(t) over time:</p>
+      <p>To resolve these limitations, we present <strong>WEAVE</strong>: a novel system architecture that transposes the enterprise software design principles of Event Sourcing (ES) and Command Query Responsibility Segregation (CQRS) to physical, spatial 3D robotic assembly. Our research platform runs on WEAVE, in which individual robots do not directly mutate or synchronize global project states. Instead, the absolute source of truth is maintained as an immutable, append-only ledger of discrete transition events (the write model). Each autonomous robot in the swarm maintains a local copy of this event stream, which it processes asynchronously to reconstruct and update a local projection of the global Assembly Graph (the read model). In this framework, the physical progress of the construction site is modeled as a continuous feedback loop designed to systematically minimize the spatial and structural error vector e(t) over time:</p>
       <div class="paper-eq" role="math" aria-label="e of t equals s desired of t minus s current of t">
       e(t) = s<sub>desired</sub>(t) &minus; s<sub>current</sub>(t)
       </div>
@@ -195,7 +195,7 @@
       <h3>2.1 &middot; Multi-Agent Task Allocation (MRTA) in Robotic Construction</h3>
       <p>Distributed assembly requires partitioning a complex structural plan into distinct tasks and assigning them to available agents. Traditional state-of-the-art frameworks, such as SwarmBuild, utilize market-based or auction-based assignment protocols (e.g., Sequential Single Item (SSI) or Ordered Single Item (OSI) bidding) to dynamically allocate tasks based on distance and capability.</p>
       <p>While these protocols effectively optimize task distribution in fully connected networks, they suffer from high latency and severe performance degradation under intermittent connectivity. Each auction round requires multiple consensus steps across the network; if a communication partition occurs during a bidding window, the allocation stalls.</p>
-      <p>Additionally, parallel task claiming in decentralized environments typically relies on lock-based synchronization. If N agents compete for L task locks, the network contention scales as O(N&times;L), introducing severe synchronization overhead. Under LEGOSwarm, we bypass auction phases entirely by using a lock-free, lease-based reservation protocol modeled on Conflict-Free Replicated Data Types (CRDTs), achieving strong eventual consistency (SEC) without centralized arbitration.</p>
+      <p>Additionally, parallel task claiming in decentralized environments typically relies on lock-based synchronization. If N agents compete for L task locks, the network contention scales as O(N&times;L), introducing severe synchronization overhead. Under WEAVE, we bypass auction phases entirely by using a lock-free, lease-based reservation protocol modeled on Conflict-Free Replicated Data Types (CRDTs), achieving strong eventual consistency (SEC) without centralized arbitration.</p>
       </div>
 
       <div id="sec-2-2" class="paper-subsection">
@@ -203,20 +203,20 @@
       <p>Operating in GPS-denied or communication-degraded environments requires swarms to function as self-contained infrastructures. Prior works, such as SwarmMesh, have investigated the realization of shared global memories across mobile robot swarms to store topography and belief maps. These systems formulate distributed storage as a heterogeneous bin-packing optimization problem, routing data chunks across mobile nodes.</p>
       <p>Similarly, the Risk-Aware Swarm Storage (RASS) protocol utilizes potential-based percolation algorithms to route critical metadata away from high-risk spatial peripheries toward more reliable interior base stations.</p>
       <p>While these storage protocols efficiently manage partitioned file chunks, they are not designed to maintain transactional, consistent state machines for spatial assembly. Conversely, protocols like SwarmDAG address network partitioning by spawning localized ledger forks using virtual synchrony, which are later reconciled via gossip-based merge steps.</p>
-      <p>LEGOSwarm builds upon this concept of decentralized consensus by utilizing a structured event-stream ledger, ensuring that even if a network partition occurs, parallel teams can proceed with independent physical construction blocks and safely reconcile their state histories upon reconnection.</p>
+      <p>WEAVE builds upon this concept of decentralized consensus by utilizing a structured event-stream ledger, ensuring that even if a network partition occurs, parallel teams can proceed with independent physical construction blocks and safely reconcile their state histories upon reconnection.</p>
       </div>
 
       <div id="sec-2-3" class="paper-subsection">
       <h3>2.3 &middot; Event-Driven Architectures and GitOps in Multi-Agent Systems</h3>
       <p>The application of event-driven and declarative control loops has recently emerged as a paradigm for managing complex software systems. In industrial automation, the Line Information System Architecture (LISA), often referred to as the &ldquo;Tweeting Factory&rdquo;, replaces centralized orchestration with decentralized choreography, where thousands of heterogeneous devices (PLCs, sensors, and assembly robots) independently observe and react to a stream of immutable published events.</p>
       <p>In the domain of virtual multi-agent systems, Event Sourcing for Autonomous Agents (ESAA) and runtimes like ActiveGraph demonstrate that an agent&rsquo;s state can be managed by treating an append-only transaction log (activity.jsonl) as the absolute source of truth, from which the current state of a workspace is deterministically projected (roadmap.json). This is closely paired with the GitOps pattern, popularized by Kubernetes operators, where controllers continuously monitor actual system states, compare them against declared desired configurations, and run idempotent reconciliation loops to align the two.</p>
-      <p>The primary novelty of LEGOSwarm is the translation of these software-engineering concepts (event-sourced state projection, transactional boundaries, and GitOps-style reconciliation) into the physical, three-dimensional spatial coordinates of a robotic construction site.</p>
+      <p>The primary novelty of WEAVE is the translation of these software-engineering concepts (event-sourced state projection, transactional boundaries, and GitOps-style reconciliation) into the physical, three-dimensional spatial coordinates of a robotic construction site.</p>
       </div>
       </section>
 
       <section id="system-architecture" class="paper-section">
       <h2>3 &middot; System Architecture &amp; Data Topology</h2>
-      <p>The LEGOSwarm architecture fundamentally decouples physical state execution from logical mission intent. Instead of utilizing a central scheduler to distribute global state maps or explicit task assignments, the system treats the mission objective as a shared, evolving data structure. The state is synchronized across the swarm via an append-only log of granular mutations.</p>
+      <p>The WEAVE architecture fundamentally decouples physical state execution from logical mission intent. Instead of utilizing a central scheduler to distribute global state maps or explicit task assignments, the system treats the mission objective as a shared, evolving data structure. The state is synchronized across the swarm via an append-only log of granular mutations.</p>
 
       <div id="sec-3-1" class="paper-subsection">
       <h3>3.1 &middot; The Assembly Graph as a Directed Acyclic Graph (DAG)</h3>
@@ -327,7 +327,7 @@
 
       <section id="revision-layer" class="paper-section">
       <h2>5 &middot; Revision Layer &amp; Graph Patching</h2>
-      <p>In a dynamic construction environment, architectural intents change. Structural defects, material shortages, or human intervention require real-time adaptations to the build plan. The Revision Layer is the mechanism that allows the LEGOSwarm to adapt to these changes smoothly, eliminating the need to re-transmit an entire structural model when a modification occurs.</p>
+      <p>In a dynamic construction environment, architectural intents change. Structural defects, material shortages, or human intervention require real-time adaptations to the build plan. The Revision Layer is the mechanism that allows the swarm to adapt to these changes smoothly, eliminating the need to re-transmit an entire structural model when a modification occurs.</p>
 
       <div id="sec-5-1" class="paper-subsection">
       <h3>5.1 &middot; Delta-Encoded Graph Revisions</h3>
@@ -406,7 +406,7 @@
 
       <section id="verification" class="paper-section">
       <h2>7 &middot; Verification &amp; Quality Control Layers</h2>
-      <p>In autonomous physical construction, assuming that an action was executed perfectly simply because a motor turned is a common failure mode. Physical materials warp, tolerances drift, and positioning errors compound. To achieve reliable structures, the LEGOSwarm architecture treats inspection as a first-class operation, tightly integrated into the dependency graph via the Verification Layer.</p>
+      <p>In autonomous physical construction, assuming that an action was executed perfectly simply because a motor turned is a common failure mode. Physical materials warp, tolerances drift, and positioning errors compound. To achieve reliable structures, the WEAVE architecture treats inspection as a first-class operation, tightly integrated into the dependency graph via the Verification Layer.</p>
 
       <div id="sec-7-1" class="paper-subsection">
       <h3>7.1 &middot; The Build-Verify-Continue Pipeline</h3>
@@ -467,7 +467,7 @@
 
       <section id="human-in-the-loop" class="paper-section">
       <h2>9 &middot; Human-in-the-Loop &amp; Node Notes</h2>
-      <p>While the ultimate goal of the LEGOSwarm framework is full autonomy, complex real-world deployment requires a reliable interface for human oversight, design intent, and edge-case override. The Node Notes layer acts as the primary translation interface between high-level human engineering decisions and low-level machine execution, treating human guidance not as casual annotations, but as first-class, machine-readable data.</p>
+      <p>While the ultimate goal of the WEAVE framework is full autonomy, complex real-world deployment requires a reliable interface for human oversight, design intent, and edge-case override. The Node Notes layer acts as the primary translation interface between high-level human engineering decisions and low-level machine execution, treating human guidance not as casual annotations, but as first-class, machine-readable data.</p>
 
       <div id="sec-9-1" class="paper-subsection">
       <h3>9.1 &middot; Machine-Readable Intent</h3>
@@ -492,7 +492,7 @@
 
       <section id="worker-beacon" class="paper-section">
       <h2>10 &middot; Worker Beacon &amp; Network Synchronization</h2>
-      <p>In a decentralized physical environment, keeping everyone on the same page over a wireless network is a major challenge. Bandwidth is limited, and messages frequently drop. The LEGOSwarm framework handles this by making worker communication incredibly simple. Agents don&rsquo;t broadcast their internal logic, task queues, or full copies of the graph. Instead, they pass minimal, high-efficiency data packets called Worker Beacons.</p>
+      <p>In a decentralized physical environment, keeping everyone on the same page over a wireless network is a major challenge. Bandwidth is limited, and messages frequently drop. WEAVE handles this by making worker communication incredibly simple. Agents don&rsquo;t broadcast their internal logic, task queues, or full copies of the graph. Instead, they pass minimal, high-efficiency data packets called Worker Beacons.</p>
 
       <div id="sec-10-1" class="paper-subsection">
       <h3>10.1 &middot; The Minimalist Beacon Schema</h3>
@@ -538,7 +538,7 @@
       <div id="sec-11-2" class="paper-subsection">
       <h3>11.2 &middot; Future Applications: Beyond Terrestrial Construction</h3>
       <p>While this paper focuses on structural brick assembly, the underlying data topology is inherently generic. Any physical or digital process that can be modeled as a series of dependent state reductions can leverage this architecture.</p>
-      <p><strong>Planetary colonization:</strong> In high-latency, high-radiation environments like Mars or the Moon, central servers are single points of failure. LEGOSwarm allows autonomous machinery to harvest resources, prepare landing pads, and assemble habitats entirely from the bottom up before human arrival.</p>
+      <p><strong>Planetary colonization:</strong> In high-latency, high-radiation environments like Mars or the Moon, central servers are single points of failure. An architecture of this kind would let autonomous machinery harvest resources, prepare landing pads, and assemble habitats entirely from the bottom up before human arrival.</p>
       <p><strong>Disaster recovery:</strong> Autonomous drone swarms deployed to unstable environments (e.g., collapsed infrastructure) can map paths, clear debris, and drop supplies safely by logging localized topological patches as pathways open or close.</p>
       <p><strong>De-orbiting and space logistics:</strong> Satellites operating in orbital swarms can coordinate the capture and recycling of space debris, managing shared fueling and transport resources without risking communication blackouts with ground control.</p>
       </div>

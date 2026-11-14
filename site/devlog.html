@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dev log · Necto Robotics</title>
-    <meta name="description" content="The engineering journal behind LEGOSwarm and WEAVE: what was built, when, and what it taught us." />
+    <meta name="description" content="The Necto Robotics engineering journal: what was built, when, and what it taught us." />
     <link rel="canonical" href="https://nectorobotics.com/devlog.html" />
     <link rel="icon" href="/images/favicon.svg" type="image/svg+xml" />
     <meta name="theme-color" content="#f2f2f0" />
@@ -20,9 +20,11 @@
       <header class="paper-hero">
         <p class="label">Dev log</p>
         <h1>Engineering journal</h1>
-        <p class="lead">A running record of the work behind WEAVE, our Workload Execution and Autonomous Verification Engine. Mostly software and simulation for now, hardware as it comes. Newest first.</p>
+        <p class="lead">A running record of the work behind our robots and the software that coordinates them. Software, simulation and hardware. Newest first.</p>
       </header>
       <div class="log">
+        <!-- devlog:generated:start -->
+        <!-- devlog:generated:end -->
         <article class="log-entry">
           <p class="label"><time>June 28, 2026</time></p>
           <h2>Giving the robot a status light</h2>
@@ -66,12 +68,12 @@
         <article class="log-entry">
           <p class="label"><time>June 2, 2026</time></p>
           <h2>A swarm with no boss</h2>
-          <p>Most multi-robot systems rely on a central scheduler handing out jobs. WEAVE doesn&rsquo;t have one. Every robot keeps its own copy of the build plan, and they stay in sync by passing a couple of small messages per job: no dispatcher, no polling. Work is claimed with short leases that expire on their own, so if a robot drops out its job reopens for someone else automatically.</p>
+          <p>Most multi-robot systems rely on a central scheduler handing out jobs. Ours doesn&rsquo;t have one. Every robot keeps its own copy of the build plan, and they stay in sync by passing a couple of small messages per job: no dispatcher, no polling. Work is claimed with short leases that expire on their own, so if a robot drops out its job reopens for someone else automatically.</p>
         </article>
         <article class="log-entry">
           <p class="label"><time>May 30, 2026</time></p>
           <h2>The blueprint is the brain</h2>
-          <p>WEAVE starts by turning a LEGO instruction booklet into something the robots can read. A vision model works through the booklet page by page and turns each step into a node in a dependency graph: which part, where it goes, and what has to exist first. Parts are matched against a real catalog so the plan names exact components. That graph is the shared plan every robot builds from.</p>
+          <p>The software starts by turning a LEGO&reg; instruction booklet into something the robots can read. A vision model works through the booklet page by page and turns each step into a node in a dependency graph: which part, where it goes, and what has to exist first. Parts are matched against a real catalog so the plan names exact components. That graph is the shared plan every robot builds from.</p>
         </article>
         <article class="log-entry">
           <p class="label"><time>May 26, 2026</time></p>

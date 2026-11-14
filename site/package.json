@@ -8,6 +8,7 @@
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
+    "devlog": "node tools/build-devlog.mjs",
     "build": "npm run typecheck && vite build && node tools/assemble-dist.mjs",
     "clean": "node -e \"const fs=require('fs');for(const d of['dist','dist-vite'])fs.rmSync(d,{recursive:true,force:true})\""
   },

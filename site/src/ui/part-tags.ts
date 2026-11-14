@@ -18,7 +18,7 @@ const ANCHORS: Record<string, string> = {
 const NAMES: Record<string, string> = {
   drive: "Drive",
   compute: "AI compute",
-  camera: "RGB-D camera",
+  camera: "Wrist cameras",
   arm: "Arm",
   gripper: "Gripper",
   power: "Power",
