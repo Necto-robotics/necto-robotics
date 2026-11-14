@@ -24,6 +24,30 @@
       </header>
       <div class="log">
         <!-- devlog:generated:start -->
+        <article class="log-entry">
+          <p class="label"><time datetime="2026-11-06">November 6, 2026</time></p>
+          <h2>The board is proven, and it fails safe</h2>
+          <p>The robot&rsquo;s main board passed all ten of its bring-up checks on the bench, before a single wire was soldered to it.</p>
+          <p>Two answers mattered most. The real-time controller can run the wheels directly, with nothing standing in its way. And when the robot&rsquo;s main computer freezes, the motors are already cut before anything else happens. Next, the connector board gets soldered and the motors get power.</p>
+        </article>
+        <article class="log-entry">
+          <p class="label"><time datetime="2026-11-05">November 5, 2026</time></p>
+          <h2>The robot&rsquo;s eye moves to its hand</h2>
+          <p>The worker&rsquo;s camera is moving from its body to its wrist. A bought depth camera struggles at the distance a hand works, so the robot gets a home-built pair of small cameras beside the gripper, with lights of their own.</p>
+          <p>It will be built in three small stages, each tested before the next is bought. If the pair can&rsquo;t reliably see the height of a single plate, a ready-made close-range camera takes its place.</p>
+        </article>
+        <article class="log-entry">
+          <p class="label"><time datetime="2026-10-04">October 4, 2026</time></p>
+          <h2>One board, two brains</h2>
+          <p>The worker&rsquo;s electronics were redesigned around a single board that carries two processors. One runs perception, planning and the swarm software. The other keeps the wheels and the safe state on time.</p>
+          <p>It replaces a two-board design and removes a link between them that had to be built and debugged by hand. Every hardware note was rewritten to match, and each fact stays marked as proposed until a bench test proves it.</p>
+        </article>
+        <article class="log-entry">
+          <p class="label"><time datetime="2026-07-08">July 8, 2026</time></p>
+          <h2>A trained eye for the robot</h2>
+          <p>An offline pipeline now renders labelled practice images of bricks, trains a detector on them, and hands the result to the robot software as a pinned, versioned model.</p>
+          <p>The fifth version is the first trained and measured on bricks lying on their sides, the case earlier versions missed most. It has run end to end through the robot&rsquo;s perception path.</p>
+        </article>
         <!-- devlog:generated:end -->
         <article class="log-entry">
           <p class="label"><time>June 28, 2026</time></p>
